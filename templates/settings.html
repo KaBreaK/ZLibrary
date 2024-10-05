@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ustawienia</title>
+    <style>
+        body {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ustawienia</h1>
+
+    {% if isaccount %}
+        <h3>Zapisane Steam ID:</h3>
+        <ul>
+            {% for account in accounts %}
+                {% if account %}
+                    <li>{{ account }} <a href="{{ url_for('settings.delete_account', steam_id=account) }}">Usuń</a></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        <hr>
+    {% endif %}
+
+    {% if isaccount or session.edit_mode %}
+        <form action="/settings" method="POST">
+            <label for="steam_id">Steam ID:</label>
+            <input type="text" id="steam_id" name="steam_id" required>
+            <button type="submit">Zapisz</button>
+        </form>
+    {% else %}
+        <p>Edycja jest obecnie wyłączona.</p>
+    {% endif %}
+
+    {% if not session.edit_mode %}
+        <a href="{{ url_for('settings.enable_edit_mode') }}">Włącz edycję</a>
+    {% endif %}
+
+    <br>
+    <a href="/auth">ZALOGUJ SIE STEAMEM</a>
+    <br>
+    <button onclick="openegs()">ZALOGUJ EPIC GAMES</button>
+    <button onclick="pokazklucz()">pokazklucz</button>
+    <br>
+    <a href="/">STORNA GLOWNA</a>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h1><strong>PRZED URUCHOMIENIEM APLIKACJI WYBIERZ KATALOG STEAM</strong></h1>
+<a href="/settings">dsadasdsadasdsadasd</a>
+</body>
+<script>
+    function get_egs_games(output){
+        fetch('/loginegs', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(output)
+});
+    }
+</script>
+<script src="/static/script_settings.js"></script>
+</html>

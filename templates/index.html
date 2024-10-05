@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CHUJ WAM NA CIPSKO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Monotype+Corsiva&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="controls">
+    <a href="/" oncontextmenu="return false;"><img src="/static/images/home.png" alt="Ikona" width="35" height="35"></a>
+    <a href="/" ><img src="/static/images/search.png" alt="Ikona" width="35" height="35"></a>
+    <a href="custom"><img src="/static/images/user.png" alt="Ikona" width="35" height="35"></a>
+    <a href="settings"> <img src="/static/images/settings.png" alt="Ikona" width="35" height="35"></a>
+</div>
+<div id="background">
+    <div id="mainpage">
+        <header>
+            <div id="leftheader">
+
+                  <h1 style="font-weight: normal; font-family: 'Lobster';     margin-block-start: 0.2em;">
+    <span style="font-size: 64px;">Z</span>Library
+  </h1>
+            </div>
+            <div id="rightheader" onclick="closeApp()"><img src="/static/images/close.svg" alt="X" height="60%"></div>
+        </header>
+        <div id="search">
+            <div id="searchbar">
+                <img style="margin-left: 1%" src="/static/images/search.png" alt="Ikona" width="35" height="35">
+                <input type="text" id="searchgame" spellcheck="false" placeholder="Szukaj...">
+                <div id="clear" onclick="clear()"><img src="/static/images/close.svg" alt="X" height="60%"></div>
+            </div>
+            <div id="filters">
+                <img class="click" src="/static/images/filter.png" alt="Ikona">
+                <div class="sort-menu">
+                    <ul>
+                        <li><div class="lista" id="abc"><img src="/static/images/azsort.png" alt="alfabetycznie">Alfabetycznie</div></li>
+                        <li><div class="lista" id="timespend"><img src="/static/images/timeicon.png" alt="alfabetycznie">Ilość godzin</div></li>
+                        <li><div class="lista" id="lastplayed"><img src="/static/images/replay.png" alt="alfabetycznie">Ostatnio grane</div></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+          <div class="line-container">
+        <div class="line" ></div>
+        <div class="text" id="liczbagier"></div>
+        <div class="line" style="width: 84%"></div>
+        </div>
+        <main>
+            <div class="chooseaccount" id="chooseaccount">
+                <h1>Wybierz Konto</h1>
+            </div>
+            <div class="games" id="games-container">
+
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+    const games = {{ games|tojson }};
+    const accounts = {{ accounts|tojson}};
+    const gamespec = {{ gamespec|tojson }}
+    console.log(games)
+    console.log(accounts)
+    console.log(gamespec)
+function updateDatabase(game_name, fav, completed, what) {
+    console.log("lolpolololo")
+    var dataToUpdate = {
+        fav: fav,
+        game_name: game_name,
+        completed: completed,
+        what: what
+    };
+
+    fetch('/updategamespec', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataToUpdate)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response:', data);
+    });
+    window.location.href = '/';
+}
+</script>
+<script src="/static/scripts/script.js"></script>
+</body>
+</html>

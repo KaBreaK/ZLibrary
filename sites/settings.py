@@ -1,0 +1,120 @@
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from urllib import parse
+import re
+import sys
+import sqlite3
+import json
+import time
+from static.utils.Epic_games_library import EpicGamesStoreService
+from static.utils.update_games import update_games
+from static.utils.steam import get_steam_name
+
+settings_bp = Blueprint('settings', __name__)
+steam_openid_url = 'https://steamcommunity.com/openid/login'
+
+steam_id_re = re.compile('https://steamcommunity.com/openid/id/(.*?)$')
+
+@settings_bp.route('/settings', methods=['GET', 'POST'])
+def settings():
+    isaccount = False
+    db = sqlite3.connect("static/glibrary.db")
+    cursor = db.cursor()
+    if request.method == 'POST':
+        steam_id = request.form['steam_id']
+        cursor.execute('SELECT COUNT(*) FROM accounts WHERE accountid = ?', (steam_id,))
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('INSERT INTO accounts (accountid, platform, accountName) VALUES (?, ?, ?)', (steam_id, 'Steam', get_steam_name(steam_id),))
+        session['edit_mode'] = False
+    cursor.execute('SELECT accountid FROM accounts')
+    accounts = cursor.fetchall()
+    accounts = [account[0] for account in accounts]
+    if accounts:
+        isaccount = True
+    db.commit()
+    db.close()
+    return render_template('settings.html', accounts=accounts, isaccount=isaccount)
+
+@settings_bp.route('/settings/enable_edit_mode')
+def enable_edit_mode():
+    session['edit_mode'] = True
+    return redirect(url_for('settings.settings'))
+
+
+@settings_bp.route('/settings/delete_account/<steam_id>')
+def delete_account(steam_id):
+    db = sqlite3.connect("static/glibrary.db")
+    cursor = db.cursor()
+    cursor.execute('DELETE FROM accounts WHERE acountid = ?', (steam_id,))
+    session.modified = True
+    db.commit()
+    db.close()
+    update_games()
+    return redirect(url_for('settings.settings'))
+
+@settings_bp.route("/auth")
+def login():
+    params = {
+        'openid.ns': "http://specs.openid.net/auth/2.0",
+        'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
+        'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
+        'openid.mode': 'checkid_setup',
+        'openid.return_to': 'http://127.0.0.1:5000/authorize',
+        'openid.realm': 'http://127.0.0.1:5000'
+    }
+
+    param_string = parse.urlencode(params)
+    auth_url = steam_openid_url + "?" + param_string
+    return redirect(auth_url)
+@settings_bp.route("/authorize")
+def authorize():
+    db = sqlite3.connect("static/glibrary.db")
+    cursor = db.cursor()
+    match = steam_id_re.search(dict(request.args)['openid.identity'])
+    steam_id = match.group(1)
+    cursor.execute('SELECT COUNT(*) FROM accounts WHERE accountid = ?', (steam_id,))
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('INSERT INTO accounts (accountName, platform, accountid) VALUES (?, ?, ?)', (get_steam_name(steam_id), 'Steam', steam_id))
+    session.modified = True
+    db.commit()
+    db.close()
+    update_games()
+    return redirect(url_for('settings.settings'))
+
+@settings_bp.route('/loginegs', methods=['POST'])
+def handle_request():
+    data = request.get_json()
+    output = data
+    service = EpicGamesStoreService()
+    games = service.run(output)
+    print(games)
+    db = sqlite3.connect("static/glibrary.db")
+    cursor = db.cursor()
+    with open('.egs.token', encoding="utf-8") as token_file:
+        token = json.loads(token_file.read())
+    name = token.get('displayName')
+    print(name)
+    cursor.execute('SELECT id FROM accounts WHERE platform = "EPIC"')
+    results = cursor.fetchall()
+    if not results:
+        cursor.execute('INSERT INTO accounts (accountName, platform) VALUES (?, ?)', (name, "EPIC"))
+        time.sleep(3)
+        cursor.execute('SELECT id FROM accounts WHERE platform = "EPIC"')
+    results = cursor.fetchall()
+    if results:
+        for row in results:
+            account_id = row[0]
+        for game in games:
+            cursor.execute('INSERT INTO games (gameName, epicRunUrl, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?,?)', (game['sandboxName'], game['runUrl'], game['gameimage'], game['totalTime']/60, 0, account_id))
+
+    db.commit()
+    db.close()
+    return jsonify({'success': True})
+
+@settings_bp.route('/addpath', methods=['POST'])
+def add_path():
+    steam_path = request.form.get('steamPath')
+    if steam_path:
+        print(steam_path)
+        return f"Ścieżka Steam to: {steam_path}"
+    return "Nie wybrano żadnej ścieżki"
+    return  jsonify({'success': True})
