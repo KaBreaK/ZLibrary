@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Page</title>
+</head>
+<body>
+    <a href="/">Strona główna</a>
+{% for game in games %}
+<h5 class="card-title">{{ game['name'] }}</h5>
+    <a href="https://media.steampowered.com/steamcommunity/public/images/apps/{{ game['appid'] }}/{{ game['img_icon_url'] }}.jpg">sssssssssss</a>
+{% endfor %}
+</body>
+</html>
