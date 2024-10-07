@@ -10,7 +10,7 @@ let isQuitting = false; // Flaga kontrolująca zamykanie aplikacji
 
 async function checkIfServerRunning() {
     try {
-        await axios.get('http://127.0.0.1:5000');
+        await axios.get('http://localhost:3000/');
         return true; // Server is running
     } catch (error) {
         return false; // Server is not running
@@ -40,13 +40,13 @@ async function createWindow() {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
     mainWindow = new BrowserWindow({
-        width: Math.floor(width * 0.7),
-        height: Math.floor(height * 0.7),
+        width: Math.floor(width * 0.8),
+        height: Math.floor(height * 0.8),
         x: Math.floor((width - width * 0.73) / 2),
         y: Math.floor((height - height * 0.55) / 2),
         transparent: true,
-        frame: false,
-        resizable: false,
+        frame: true,
+        resizable: true,
         hasShadow: true,
         webPreferences: {
             nodeIntegration: true,
@@ -59,7 +59,7 @@ async function createWindow() {
         //await startFlaskServer();
     }
 
-    mainWindow.loadURL('http://127.0.0.1:3000');
+    mainWindow.loadURL('http://localhost:3000/');
     mainWindow.webContents.openDevTools();
 
     //zamykanieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
