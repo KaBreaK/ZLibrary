@@ -19,10 +19,10 @@ async function checkIfServerRunning() {
 
 async function startFlaskServer() {
     // Ensure you're using the correct Python executable
-    flaskProcess = spawn('python', ['app.py'], {
-        stdio: 'inherit', // This will pass the output to the parent process
-        cwd: path.join(__dirname) // Ensure that the working directory is set to the current directory
-    });
+    //flaskProcess = spawn('python', ['app.py'], {
+    //    stdio: 'inherit', // This will pass the output to the parent process
+    //    cwd: path.join(__dirname) // Ensure that the working directory is set to the current directory
+    //});
 
     // Listen for exit events
     flaskProcess.on('exit', (code, signal) => {
@@ -56,10 +56,10 @@ async function createWindow() {
 
     const serverRunning = await checkIfServerRunning();
     if (!serverRunning) {
-        await startFlaskServer();
+        //await startFlaskServer();
     }
 
-    mainWindow.loadURL('http://127.0.0.1:5000');
+    mainWindow.loadURL('http://127.0.0.1:3000');
     mainWindow.webContents.openDevTools();
 
     //zamykanieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
