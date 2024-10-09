@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 import sqlite3
-index_bp = Blueprint('index', __name__)
+index_bp = Blueprint('index_bp', __name__)
 
 
 def get_games():
@@ -93,3 +93,6 @@ def get_games():
 def index():
     games, accounts = get_games()
     return jsonify({"games": games, "accounts": accounts})
+@index_bp.route('/api/test')
+def api_test():
+    return {"message": "API works!"}
