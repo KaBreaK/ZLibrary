@@ -1,41 +1,44 @@
 const { app, BrowserWindow, screen, Tray, Menu, ipcMain} = require('electron');
-const { spawn } = require('child_process');
-const axios = require('axios'); // Add axios for HTTP requests
-const path = require('path'); // To help with paths
+const { exec, spawn } = require('child_process');
+const axios = require('axios');
+const path = require('path');
 
 let flaskProcess;
 let mainWindow;
 let tray;
-let isQuitting = false; // Flaga kontrolująca zamykanie aplikacji
+let isQuitting = false;
 
 async function checkIfServerRunning() {
     try {
-        await axios.get('http://localhost:3000/');
-        return true; // Server is running
+        await axios.get('http://localhost:8090/');
+        return true;
     } catch (error) {
-        return false; // Server is not running
+        return false;
     }
 }
 
 async function startFlaskServer() {
-    // Ensure you're using the correct Python executable
-    //flaskProcess = spawn('python', ['app.py'], {
-    //    stdio: 'inherit', // This will pass the output to the parent process
-    //    cwd: path.join(__dirname) // Ensure that the working directory is set to the current directory
-    //});
-
-    // Listen for exit events
+    flaskProcess = spawn('python', ['app.py'], {
+        stdio: 'inherit',
+        cwd: path.join(__dirname)
+    });
     flaskProcess.on('exit', (code, signal) => {
         console.log(`Flask process exited with code: ${code}, signal: ${signal}`);
-        flaskProcess = null; // Clear reference to process when it exits
+        flaskProcess = null;
     });
-
-    // Listen for any errors
     flaskProcess.on('error', (error) => {
         console.error(`Failed to start Flask process: ${error.message}`);
     });
 }
-
+async function startFlaskServerRun() {
+    exec("waitress-serve --port=8090 app:app")
+    flaskProcess.on('exit', (code, signal) => {
+        mainWindow.loadURL('http://localhost:8090/shutdown');
+    });
+    flaskProcess.on('error', (error) => {
+        console.error(`Failed to start Flask process: ${error.message}`);
+    });
+}
 async function createWindow() {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -56,10 +59,11 @@ async function createWindow() {
 
     const serverRunning = await checkIfServerRunning();
     if (!serverRunning) {
-        //await startFlaskServer();
+        await startFlaskServer();
+        //await startFlaskServerRun();
     }
 
-    mainWindow.loadURL('http://localhost:3000/');
+    mainWindow.loadURL('http://localhost:8090/');
     mainWindow.webContents.openDevTools();
 
     //zamykanieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
@@ -75,12 +79,12 @@ async function createWindow() {
 
     mainWindow.webContents.on('before-input-event', (event, input) => {
         if (input.key === 'F11') {
-            event.preventDefault(); // Blokuje działanie klawisza F11
+            event.preventDefault();
         }
     });
 
     mainWindow.on('close', (event) => {
-        if (!isQuitting) { // Sprawdź, czy zamknięcie nie jest z system tray
+        if (!isQuitting) {
             event.preventDefault();
             mainWindow.hide();
         }
@@ -88,13 +92,13 @@ async function createWindow() {
 }
 
 function createTrayIcon() {
-    tray = new Tray('static/images/tray.png'); // Replace with your icon path
+    tray = new Tray('static/images/tray.png');
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Show', click: () => mainWindow.show() },
         { label: 'Quit', click: () => {
-            isQuitting = true; // Ustaw flagę na true przy wybraniu "Quit"
+            isQuitting = true;
             if (flaskProcess) {
-                flaskProcess.kill(); // Kill the Flask process
+                flaskProcess.kill();
             }
             app.quit();
         }},
@@ -106,10 +110,8 @@ function createTrayIcon() {
         mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
     });
 }
-
-// Ensure Flask process is killed when the app quits
 app.on('before-quit', () => {
-    isQuitting = true; // Ustaw flagę na true przy zamykaniu aplikacji
+    isQuitting = true;
     if (flaskProcess) {
         flaskProcess.kill();
     }
