@@ -2,7 +2,7 @@
   "name": "zbyszek",
   "version": "0.0.0",
   "scripts": {
-    "start": "vite",
+    "start": "vite --port 8091",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix --ignore-path .gitignore"

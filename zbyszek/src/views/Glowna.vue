@@ -9,10 +9,9 @@
 
         <v-toolbar-title>AnonimowiGrajacyAlkoholicy</v-toolbar-title>
         <v-text-field label="Nazwa Gry" style="margin-top: 20px"></v-text-field>
-        <font-awesome-icon :icon="['fas', 'xmark']" size="xl" style=""/>
-
-        <v-spacer>
-        </v-spacer>
+          <v-btn icon @click="handleClick">
+            <font-awesome-icon :icon="['fas', 'xmark']" size="lg" style="margin-right: 30px" />
+          </v-btn>
       </v-app-bar>
 
      <v-navigation-drawer
@@ -65,7 +64,11 @@
   import {createRouter as $router} from "vue-router/dist/vue-router.esm-browser";
 
   export default {
-    methods: {$router},
+    methods: {
+      handleClick() {
+      console.log('CHUJ WIELKI I SZELKI');
+    },
+      $router},
     data: () => ({
       drawer: true,
       rail: true,
