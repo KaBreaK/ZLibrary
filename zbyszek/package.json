@@ -2,7 +2,7 @@
   "name": "zbyszek",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix --ignore-path .gitignore"
@@ -33,6 +33,6 @@
     "vite": "^5.3.3",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-plugin-vuetify": "^2.0.3",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.5"
   }
 }
