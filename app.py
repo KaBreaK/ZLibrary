@@ -59,10 +59,7 @@ def init_db():
 
 init_db()
 
-# Zarejestruj blueprinty
 app.register_blueprint(index_bp)
-
-# Serwowanie głównej strony aplikacji (index.html z Vue.js)
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -73,7 +70,6 @@ def shutdown():
 @app.route('/assets/<path:filename>')
 def assets(filename):
     return send_from_directory(os.path.join(app.static_folder, 'assets'), filename)
-# Obsługa innych ścieżek - routing SPA
 
 if __name__ == '__main__':
     app.run(debug=True, port=8090)

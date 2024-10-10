@@ -63,7 +63,8 @@ async function createWindow() {
         //await startFlaskServerRun();
     }
 
-    mainWindow.loadURL('http://localhost:8090/');
+    //mainWindow.loadURL('http://localhost:8090/');
+    mainWindow.loadURL('http://localhost:8091/');
     mainWindow.webContents.openDevTools();
 
     //zamykanieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee

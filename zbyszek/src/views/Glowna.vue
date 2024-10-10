@@ -9,7 +9,7 @@
 
         <v-toolbar-title>AnonimowiGrajacyAlkoholicy</v-toolbar-title>
         <v-text-field label="Nazwa Gry" style="margin-top: 20px"></v-text-field>
-          <v-btn icon @click="handleClick">
+          <v-btn icon @click="handleClickClose">
             <font-awesome-icon :icon="['fas', 'xmark']" size="lg" style="margin-right: 30px" />
           </v-btn>
       </v-app-bar>
@@ -61,12 +61,37 @@
 </template>
 
 <script>
+  const { ipcRenderer } = require('electron');
   import {createRouter as $router} from "vue-router/dist/vue-router.esm-browser";
 
   export default {
     methods: {
-      handleClick() {
-      console.log('CHUJ WIELKI I SZELKI');
+      async handleClickClose() {
+        try {
+          await ipcRenderer.invoke('closeapp');
+        } catch (error) {
+          console.error('Błąd podczas zamykania aplikacji:', error);
+        }
+      },
+      GetGames() {
+      fetch('http://localhost:8090/api/games')
+  .then(response => {
+    // Sprawdzamy, czy odpowiedź jest poprawna (status 200)
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+    // Zwracamy odpowiedź w formacie JSON
+    return response.json();
+  })
+  .then(data => {
+    // Tutaj przetwarzamy pobrane dane
+    console.log('Dane z API:', data);
+    // Możesz np. wyświetlić te dane na stronie lub przetworzyć je w inny sposób
+  })
+  .catch(error => {
+    // Obsługa błędów
+    console.error('Błąd podczas pobierania danych:', error);
+  });
     },
       $router},
     data: () => ({

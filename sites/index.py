@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 import sqlite3
+from static.utils.update_games import update_games
+
 index_bp = Blueprint('index_bp', __name__)
 
 
@@ -96,3 +98,7 @@ def index():
 @index_bp.route('/api/test')
 def api_test():
     return {"message": "API works!"}
+@index_bp.route('/api/sync')
+def sync_games():
+    update_games()
+    return redirect('/')

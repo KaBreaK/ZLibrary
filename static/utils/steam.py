@@ -38,13 +38,16 @@ def get_steam_games(steam_id):
     else:
         return []
 def get_steam_name(steamid):
-    config_path = 'C:\\Program Files (x86)\\Steam\\config\\loginusers.vdf'
-    with open(config_path, 'r', encoding='utf-8') as file:
-        content = file.read()
-    steamid_str = str(steamid)
-    user_pattern = re.compile(r'"' + re.escape(steamid_str) + r'"\s*{[^{}]*"AccountName"\s*"([^"]+)"')
-    match = user_pattern.search(content)
-    if match:
-        return match.group(1)
-    else:
-        return None
+    try:
+        config_path = 'C:\\Program Files (x86)\\Steam\\config\\loginusers.vdf'
+        with open(config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        steamid_str = str(steamid)
+        user_pattern = re.compile(r'"' + re.escape(steamid_str) + r'"\s*{[^{}]*"AccountName"\s*"([^"]+)"')
+        match = user_pattern.search(content)
+        if match:
+            return match.group(1)
+        else:
+            return None
+    except:
+        return "Konto"
