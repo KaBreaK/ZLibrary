@@ -51,21 +51,21 @@ def delete_account(steam_id):
     update_games()
     return redirect(url_for('settings.settings'))
 
-@settings_bp.route("/auth")
+@settings_bp.route("/auth/steam")
 def login():
     params = {
         'openid.ns': "http://specs.openid.net/auth/2.0",
         'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
         'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
         'openid.mode': 'checkid_setup',
-        'openid.return_to': 'http://127.0.0.1:8090/authorize',
+        'openid.return_to': 'http://127.0.0.1:8090/authorize/steam',
         'openid.realm': 'http://127.0.0.1:8090'
     }
 
     param_string = parse.urlencode(params)
     auth_url = steam_openid_url + "?" + param_string
     return redirect(auth_url)
-@settings_bp.route("/authorize")
+@settings_bp.route("/authorize/steam")
 def authorize():
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()
@@ -86,6 +86,10 @@ def authorize():
             window.close();
         </script>
     """)
+@settings_bp.route("/auth/egs")
+def login_egs():
+
+    return render_template('egs_login.html')
 
 @settings_bp.route('/loginegs', methods=['POST'])
 def handle_request():

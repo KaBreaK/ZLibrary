@@ -74,7 +74,7 @@
             closeappbutton();
         });
         ipcMain.handle('LoginViaSteam', async () =>{
-            createLoginWindow()
+            createLoginWindow('steam')
         });
         function closeappbutton() {
             //killflask();
@@ -96,7 +96,7 @@
             }
         });
     }
-    async function createLoginWindow() {
+    async function createLoginWindow(platform) {
         const {width, height} = screen.getPrimaryDisplay().workAreaSize;
 
         loginWindow = new BrowserWindow({
@@ -115,7 +115,9 @@
         const session = loginWindow.webContents.session;
 
         await session.clearStorageData({ storages: ['cookies'] });
-        loginWindow.loadURL('http://localhost:8090/auth');
+        if (platform === 'steam') {
+            loginWindow.loadURL('http://localhost:8090/auth/steam');
+        }
 
         ipcMain.handle('login-success', async () => {
             loginWindow.close();
