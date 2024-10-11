@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, render_template_string
 from urllib import parse
 import re
 import sys
@@ -58,8 +58,8 @@ def login():
         'openid.identity': "http://specs.openid.net/auth/2.0/identifier_select",
         'openid.claimed_id': "http://specs.openid.net/auth/2.0/identifier_select",
         'openid.mode': 'checkid_setup',
-        'openid.return_to': 'http://127.0.0.1:5000/authorize',
-        'openid.realm': 'http://127.0.0.1:5000'
+        'openid.return_to': 'http://127.0.0.1:8090/authorize',
+        'openid.realm': 'http://127.0.0.1:8090'
     }
 
     param_string = parse.urlencode(params)
@@ -78,7 +78,14 @@ def authorize():
     db.commit()
     db.close()
     update_games()
-    return redirect(url_for('settings.settings'))
+
+    return render_template_string(f"""
+        <script>
+            const {{ ipcRenderer }} = require('electron');
+            ipcRenderer.invoke('login-success');
+            window.close();
+        </script>
+    """)
 
 @settings_bp.route('/loginegs', methods=['POST'])
 def handle_request():

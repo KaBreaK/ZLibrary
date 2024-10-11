@@ -3,6 +3,7 @@ from flask_cors import CORS
 import sqlite3
 import os
 from sites.index import index_bp
+from sites.settings import settings_bp
 
 app = Flask(__name__, static_folder='dist', template_folder='dist')
 app.secret_key = 'CHUJ'
@@ -60,6 +61,7 @@ def init_db():
 init_db()
 
 app.register_blueprint(index_bp)
+app.register_blueprint(settings_bp)
 @app.route('/')
 def index():
     return render_template('index.html')
