@@ -11,6 +11,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "axios": "^1.7.7",
     "electron": "^32.2.0",
+    "vue-lazyload": "^3.0.0",
     "vue-router": "^4.4.5"
   }
 }
