@@ -8,7 +8,7 @@
 import { registerPlugins } from '@/plugins'
 
 // Components
-import App from './views/Glowna.vue'
+import App from './views/App.vue'
 
 // Composables
 import { createApp } from 'vue'

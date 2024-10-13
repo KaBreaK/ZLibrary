@@ -1,71 +1,50 @@
 <template>
-  <v-card>
-    <v-layout>
-        <v-app-bar color="red" prominent>
-        <v-toolbar-title>AnonimowiGrajacyAlkoholicy</v-toolbar-title>
+  <v-main>
+    <v-container fluid>
+      <v-row dense>
+        <v-col v-for="(game, index) in games" :key="index" :cols="3">
+          <!-- Skeleton loader wyświetlany, gdy dane są ładowane -->
+          <v-skeleton-loader
+            v-if="loading"
+            type="card"
+            max-width="500"
+          ></v-skeleton-loader>
 
-        <v-text-field label="Nazwa Gry" style="margin-top: 20px; max-width: 600px; text-align: center"></v-text-field>
-
-        <v-spacer></v-spacer>
-
-          <v-btn icon @click="handleClickClose">
-            <font-awesome-icon :icon="['fas', 'xmark']" size="lg" style="margin-right: 30px" />
-          </v-btn>
-      </v-app-bar>
-
-      <v-navigation-drawer
-        v-model="drawer"
-        :rail="rail"
-        permanent
-        @click="rail = false"
-      >
-        <template v-slot:append>
-          <v-btn
-            icon="mdi-chevron-left"
-            variant="text"
-            @click.stop="rail = !rail"
-          ></v-btn>
-        </template>
-
-        <v-divider></v-divider>
-
-        <v-list density="compact" nav>
-          <v-list-item
-            prepend-icon="mdi-account"
-            title="Biblioteka Gier"
-            value="liblary"
-            @click="$router.push({ name: 'glowna' })"
-          >
-            <template #prepend>
-              <font-awesome-icon :icon="['fas', 'house']" size="lg" style="margin-right: 30px" />
-            </template>
-          </v-list-item>
-          <v-list-item
-              title="Ulubione"
-              value="favourite"
-              @click="$router.push({ name: 'ulubione' })"
+          <!-- Wyświetlanie karty gry po załadowaniu -->
+          <v-card v-else>
+            <v-img
+              :src="game.gamephoto"
+              class="align-end"
+              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
+              height="200px"
+              cover
             >
-              <template #prepend>
-                <font-awesome-icon :icon="['fas', 'heart']" size="lg" style="margin-right: 30px" />
-              </template>
-          </v-list-item>
-          <v-list-item
-              title="Ustawienia"
-              value="ustawienia"
-              @click="$router.push({ name: 'ustawienia' })"
-            >
-              <template #prepend>
-                <font-awesome-icon :icon="['fas', 'gear']" size="lg" style="margin-right: 30px" />
-              </template>
-          </v-list-item>
-        </v-list>
-      </v-navigation-drawer>
+              <v-card-title class="text-white">{{ game.name }}</v-card-title>
+            </v-img>
 
-      <v-main style="background: aliceblue">
-        <router-view></router-view> <!-- Wyświetlanie widoków zależnych od trasy -->
-      </v-main>
-    </v-layout>
-  </v-card>
+            <v-card-subtitle>
+              Ostatnio grane: {{ formatLastPlayed(game.lastPlayed) }}
+            </v-card-subtitle>
+
+            <v-card-text>
+              <strong>Konto:</strong> {{ game.accountName }}<br />
+              <strong>Łączny czas gry:</strong> {{ game.totalPlayTime }} godzin<br />
+              <v-btn color="green" size="large">ZAGRAJ</v-btn>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="medium-emphasis"
+                icon="mdi-heart"
+                size="small"
+              ></v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+  </v-main>
 </template>
 
 <script>
@@ -73,42 +52,44 @@
 
   export default {
     methods: {
-      async handleClickClose() {
-        try {
-          await ipcRenderer.invoke('closeapp');
-        } catch (error) {
-          console.error('Błąd podczas zamykania aplikacji:', error);
-        }
-      },
-      async navigateTo(routeName) {
-      this.$router.push({ name: routeName });
-      },
       GetGames() {
-      fetch('http://localhost:8090/api/games')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Dane z API:', data);
-        })
-        .catch(error => {
-          console.error('Błąd podczas pobierania danych:', error);
-        });
+        fetch('http://localhost:8090/api/games')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Przetwarzamy dane, by wyciągnąć potrzebne informacje
+            this.games = data.games.map(game => {
+              return {
+                gamephoto: game.gamephoto,
+                name: game.name,
+                accountName: game.playTimePerAccount.length > 0 ? game.playTimePerAccount[0].accountName : 'Brak konta',
+                lastPlayed: game.lastPlayed,
+                totalPlayTime: (game.totalPlayTime / 60).toFixed(2) // Przeliczamy czas gry na godziny
+              };
+            });
+            this.loading = false; // Wyłączamy loader po załadowaniu danych
+          })
+          .catch(error => {
+            console.error('Błąd podczas pobierania danych:', error);
+          });
+      },
+      formatLastPlayed(timestamp) {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleDateString();
+      }
+    },
+    data() {
+      return {
+        games: [],
+        loading: true
+      };
+    },
+    mounted() {
+      this.GetGames(); // Pobieranie gier przy montowaniu komponentu
     }
-  },
-  data() {
-    return {
-      drawer: true,
-      rail: true,
-      games: [],
-      loading: true
-    };
-  },
-  mounted() {
-    this.GetGames(); // Wywołanie pobierania gier przy montowaniu komponentu
-  }
-};
+  };
 </script>

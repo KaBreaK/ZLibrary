@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Ustawienia from './views/Ustawienia.vue';
-import Ulubione from './views/Ulubione.vue'; // Zakładam, że masz ten widok\
-import Glowna from "@/views/Glowna.vue";
+import Ulubione from './views/Ulubione.vue';
+import Glowna from "./views/Glowna.vue";
+import Users from "./views/Users.vue";
 
 const routes = [
   {
-    path: '/glowna',
-    redirect: 'glowna', // Przekierowanie na domyślną stronę
+    path: '/', // Ścieżka główna
+    name: 'glowna', // Dodanie nazwy 'glowna'
     component: Glowna
   },
   {
@@ -18,6 +19,11 @@ const routes = [
     path: '/ulubione',
     name: 'ulubione',
     component: Ulubione
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: Users
   },
   // inne ścieżki
 ];

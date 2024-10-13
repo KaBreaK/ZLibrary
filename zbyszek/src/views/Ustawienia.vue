@@ -1,7 +1,7 @@
 <template>
       <v-main style="height: 100%">
         <v-card-text>
-            <v-btn icon @click="LoginViaSteam">
+            <v-btn icon @click="LoginViaSteam" size="x-large">
             Steam
           </v-btn>
         </v-card-text>
@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import {ipcRenderer} from "electron";
+  const { ipcRenderer } = require('electron');
 
   export default {
      methods: {
