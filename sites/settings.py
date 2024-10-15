@@ -8,7 +8,6 @@ import time
 from static.utils.Epic_games_library import EpicGamesStoreService
 from static.utils.update_games import update_games
 from static.utils.steam import get_steam_name
-
 settings_bp = Blueprint('settings', __name__)
 steam_openid_url = 'https://steamcommunity.com/openid/login'
 
@@ -49,7 +48,8 @@ def delete_account(steam_id):
     db.commit()
     db.close()
     update_games()
-    return redirect(url_for('settings.settings'))
+    previous_page = request.referrer
+    return redirect(previous_page)
 
 @settings_bp.route("/auth/steam")
 def login():
@@ -86,17 +86,15 @@ def authorize():
             window.close();
         </script>
     """)
-@settings_bp.route("/auth/egs")
-def login_egs():
 
-    return render_template('egs_login.html')
 
-@settings_bp.route('/loginegs', methods=['POST'])
-def handle_request():
+@settings_bp.route('/auth/egs', methods=['POST'])
+def loginegs():
     data = request.get_json()
-    output = data
+    auth = data['authorizationCode']
+    print(auth)
     service = EpicGamesStoreService()
-    games = service.run(output)
+    games = service.run(auth)
     print(games)
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()

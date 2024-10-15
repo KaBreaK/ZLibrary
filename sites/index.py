@@ -10,7 +10,6 @@ def get_games():
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
 
-    # Updated SQL query with LEFT JOIN to gamespec table
     cursor.execute("""
         SELECT games.*, accounts.id AS acc_id, accounts.accountName, accounts.platform, accounts.steamAPI, accounts.accountid,
                gamespec.fav, gamespec.completed
@@ -21,13 +20,12 @@ def get_games():
 
     rows = cursor.fetchall()
 
-    games_dict = {}  # Dictionary to hold unique games with combined data
-    accounts = []  # List to store account details
+    games_dict = {}
+    accounts = []
 
     for row in rows:
         game_name = row['GameName']
 
-        # Set default values of 0 if fav or completed is None
         game_data = {
             'epicRunUrl': row['epicRunUrl'],
             'steamid': row['steamid'],
@@ -42,7 +40,6 @@ def get_games():
             'accountid': row['accountid']
         }
 
-        # If the game already exists in the games_dict, update the total playtime and lastPlayed logic
         if game_name in games_dict:
             games_dict[game_name]['totalPlayTime'] += game_data['playTime']
             games_dict[game_name]['playTimePerAccount'].append({
@@ -50,12 +47,10 @@ def get_games():
                 'platform': game_data['platform'],
                 'playTime': game_data['playTime']
             })
-            # Update lastPlayed if the current playTime is higher
             if game_data['playTime'] > games_dict[game_name]['maxPlayTime']:
                 games_dict[game_name]['maxPlayTime'] = game_data['playTime']
                 games_dict[game_name]['lastPlayed'] = game_data['lastPlayed']
         else:
-            # If game doesn't exist yet, add it with initial values
             games_dict[game_name] = {
                 'name': game_name,
                 'epicRunUrl': game_data['epicRunUrl'],
@@ -70,10 +65,9 @@ def get_games():
                     'platform': game_data['platform'],
                     'playTime': game_data['playTime']
                 }],
-                'maxPlayTime': game_data['playTime']  # Keep track of max playtime to update lastPlayed
+                'maxPlayTime': game_data['playTime']
             }
 
-        # Ensure account data is unique
         if row['accountid'] not in [acc['accountid'] for acc in accounts]:
             account_data = {
                 'id': row['acc_id'],
@@ -86,7 +80,6 @@ def get_games():
     db.commit()
     db.close()
 
-    # Convert the games_dict back to a list
     games = list(games_dict.values())
 
     return games, accounts
@@ -102,3 +95,21 @@ def api_test():
 def sync_games():
     update_games()
     return redirect('/')
+@index_bp.route('/api/fav', methods=['POST'])
+def updategamespec():
+    db = sqlite3.connect("static/glibrary.db")
+    cursor = db.cursor()
+    data = request.get_json()
+    game_name = data.get('game_name')
+    cursor.execute("SELECT fav FROM gamespec WHERE game_name = ?", (game_name,))
+    result = cursor.fetchone()
+
+    if result is None:
+        cursor.execute("INSERT INTO gamespec (game_name, fav) VALUES (?, ?)", (game_name, True))
+    else:
+        current_fav = result[0]
+        new_fav = not current_fav
+        cursor.execute("UPDATE gamespec SET fav = ? WHERE game_name = ?", (new_fav, game_name))
+    db.commit()
+    db.close()
+    return jsonify({'message': 'Database updated successfully'})
