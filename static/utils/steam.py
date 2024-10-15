@@ -2,12 +2,29 @@ import sqlite3
 import requests
 import os
 import re
+import json
+def getsteampath():
+    with open("static/settings.json", 'r') as f:
+        config = json.load(f)
+        return config['steamPath']
 
 STEAM_API_KEY = '5D2C684722E3A769185AB7B84EA7A1EB'
+def loadSteamAPI():
+    db = sqlite3.connect("static/glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+    cursor.execute('SELECT steamAPI FROM accounts')
+    rows = cursor.fetchall()
+    for row in rows:
+        if row['steamAPI']:
+            STEAM_API_KEY = row['steamAPI']
+
+
 
 def get_lastplayed_from_disc(steamid):
     convertedsteamid = int(steamid) - 76561197960265728
-    file_path = f'C:\\Program Files (x86)\\Steam\\userdata\\{convertedsteamid}\\config\\localconfig.vdf'
+    steampath = getsteampath()
+    file_path = f'{steampath}\\userdata\\{convertedsteamid}\\config\\localconfig.vdf'
     print(file_path)
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
@@ -18,10 +35,11 @@ def get_lastplayed_from_disc(steamid):
         tab.append({'gameid': int(app_id), 'lastplayed': last_played})
     return tab
 
-def get_steam_games(steam_id):
+def get_steam_games(steam_id, steamapi):
+    loadSteamAPI()
     url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
     params = {
-        'key': STEAM_API_KEY,
+        'key': (steamapi if steamapi else STEAM_API_KEY),
         'steamid': steam_id,
         'include_appinfo': 'true',
         'include_played_free_games': 'true',
@@ -39,7 +57,8 @@ def get_steam_games(steam_id):
         return []
 def get_steam_name(steamid):
     try:
-        config_path = 'C:\\Program Files (x86)\\Steam\\config\\loginusers.vdf'
+        steampath = getsteampath()
+        config_path = f'{steampath}\\config\\loginusers.vdf'
         with open(config_path, 'r', encoding='utf-8') as file:
             content = file.read()
         steamid_str = str(steamid)

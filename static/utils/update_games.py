@@ -13,17 +13,17 @@ def update_games():
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
     cursor.execute('DELETE FROM games')
-    cursor.execute('SELECT id, accountid, platform FROM accounts')
+    cursor.execute('SELECT id, accountid, platform, steamAPI FROM accounts')
     rows = cursor.fetchall()
     for row in rows:
         if row['platform'] == 'Steam':
-            steamacc = row['accountid']
+            steamacc = row['accountid'], row['steamAPI']
             steamaccs.append(steamacc)
         elif row['platform'] == 'EPIC':
             epicacc = row['id']
             epicaccs.append(epicacc)
     for steam in steamaccs:
-        games = get_steam_games(steam)
+        games = get_steam_games(steam[0], steam[1])
         for game in games:
             if 'Test' not in game['name']:
                 cursor.execute("SELECT id FROM accounts WHERE accountid = ?", (steam,))
@@ -53,6 +53,27 @@ def update_games():
     db.commit()
     db.close()
 
+
+if __name__ == "__main__":
+    steamaccs = []
+    epicaccs = []
+    db = sqlite3.connect("../glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+    cursor.execute('DELETE FROM games')
+    cursor.execute('SELECT id, accountid, platform, steamAPI FROM accounts')
+    rows = cursor.fetchall()
+    print("abc")
+    print(rows)
+    for row in rows:
+        if row['platform'] == 'Steam':
+            steamacc = row['accountid'], row['steamAPI']
+            steamaccs.append(steamacc)
+        elif row['platform'] == 'EPIC':
+            epicacc = row['id']
+            epicaccs.append(epicacc)
+    for steam in steamaccs:
+        print("abc")
 
 
 
