@@ -1,3 +1,5 @@
+from idlelib.outwin import file_line_pats
+import json
 from flask import Flask, render_template, send_from_directory
 from flask_cors import CORS
 import sqlite3
@@ -8,20 +10,16 @@ from sites.settings import settings_bp
 app = Flask(__name__, static_folder='dist', template_folder='dist')
 app.secret_key = 'CHUJ'
 CORS(app)
-# Otwórz połączenie z bazą danych
+
+default_config = {
+    "steamPath": "C:\\Program Files (x86)\\Steam\\",
+    "gameLibraries": {},
+    "theme": "dark"
+}
+
 def init_db():
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()
-
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS `User` (
-        `Name` TEXT NOT NULL,
-        `steampath` TEXT NOT NULL,
-        `steamgamepath` TEXT NOT NULL,
-        `ustawienie` TEXT NOT NULL,
-        PRIMARY KEY (`Name`)
-    );
-    ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS `Accounts` (
@@ -59,7 +57,12 @@ def init_db():
     db.close()
 
 init_db()
-
+def create_config():
+    file_path = "static/settings.json"
+    if not os.path.exists(file_path):
+        print(f"Plik {file_path} nie istnieje. Tworzę domyślny plik konfiguracyjny.")
+        with open(file_path, 'w') as f:
+            json.dump(default_config, f, indent=4)
 app.register_blueprint(index_bp)
 app.register_blueprint(settings_bp)
 @app.route('/')
@@ -74,4 +77,5 @@ def assets(filename):
     return send_from_directory(os.path.join(app.static_folder, 'assets'), filename)
 
 if __name__ == '__main__':
+    create_config()
     app.run(debug=True, port=8090)
