@@ -2,6 +2,7 @@ import sqlite3
 import requests
 import os
 import re
+import json
 from .Epic_games_library import EpicGamesStoreService
 from .steam import get_steam_games, get_lastplayed_from_disc
 
@@ -54,27 +55,21 @@ def update_games():
     db.close()
 
 
-if __name__ == "__main__":
-    steamaccs = []
-    epicaccs = []
+def searchforgames():
+    with open("../settings.json", 'r') as f:
+        config = json.load(f)
+        libaryPaths = config['gameLibraries']
     db = sqlite3.connect("../glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
-    cursor.execute('DELETE FROM games')
-    cursor.execute('SELECT id, accountid, platform, steamAPI FROM accounts')
-    rows = cursor.fetchall()
-    print("abc")
-    print(rows)
-    for row in rows:
-        if row['platform'] == 'Steam':
-            steamacc = row['accountid'], row['steamAPI']
-            steamaccs.append(steamacc)
-        elif row['platform'] == 'EPIC':
-            epicacc = row['id']
-            epicaccs.append(epicacc)
-    for steam in steamaccs:
-        print("abc")
-
+    cursor.execute("UPDATE Games SET installed  = 0")
+    installedGames = []
+    for path in libaryPaths:
+        installedGames = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+    for game in installedGames:
+        cursor.execute("UPDATE Games SET installed = 1 WHERE GameName = ?", (game,))
+if __name__ == '__main__':
+    searchforgames()
 
 
 

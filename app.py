@@ -40,6 +40,7 @@ def init_db():
         `gamePhoto` TEXT NOT NULL,
         `playTime` INTEGER,
         `lastPlayed` INTEGER,
+        `installed` BOOLEAN,
         `account_id` INTEGER NOT NULL,
         FOREIGN KEY (`account_id`) REFERENCES `Accounts` (`id`)
     );

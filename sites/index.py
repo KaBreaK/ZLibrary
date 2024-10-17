@@ -33,6 +33,7 @@ def get_games():
             'account_id': row['account_id'],
             'playTime': row['playTime'],
             'lastPlayed': row['lastPlayed'],
+            'installed': row['installed'] if row['installed'] is not None else 0,
             'fav': row['fav'] if row['fav'] is not None else 0,
             'completed': row['completed'] if row['completed'] is not None else 0,
             'accountName': row['accountName'],
@@ -58,6 +59,7 @@ def get_games():
                 'gamephoto': game_data['gamephoto'],
                 'totalPlayTime': game_data['playTime'],
                 'lastPlayed': game_data['lastPlayed'],
+                'installed': row['installed'] if row['installed'] is not None else 0,
                 'fav': game_data['fav'],
                 'completed': game_data['completed'],
                 'playTimePerAccount': [{
