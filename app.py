@@ -66,16 +66,10 @@ def create_config():
             json.dump(default_config, f, indent=4)
 app.register_blueprint(index_bp)
 app.register_blueprint(settings_bp)
-@app.route('/')
-def index():
-    return render_template('index.html')
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
     os._exit(0)
     return 'Server shutting down...'
-@app.route('/assets/<path:filename>')
-def assets(filename):
-    return send_from_directory(os.path.join(app.static_folder, 'assets'), filename)
 
 if __name__ == '__main__':
     create_config()

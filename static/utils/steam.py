@@ -11,6 +11,7 @@ def getsteampath():
 STEAM_API_KEY = '5D2C684722E3A769185AB7B84EA7A1EB'
 def loadSteamAPI():
     db = sqlite3.connect("static/glibrary.db")
+    #db = sqlite3.connect("../glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
     cursor.execute('SELECT steamAPI FROM accounts')
@@ -67,6 +68,6 @@ def get_steam_name(steamid):
         if match:
             return match.group(1)
         else:
-            return None
+            return "Konto"
     except:
         return "Konto"

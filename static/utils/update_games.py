@@ -5,12 +5,13 @@ import re
 import json
 from .Epic_games_library import EpicGamesStoreService
 from .steam import get_steam_games, get_lastplayed_from_disc
-
+#from steam import get_steam_games, get_lastplayed_from_disc
 
 def update_games():
     steamaccs = []
     epicaccs = []
     db = sqlite3.connect("static/glibrary.db")
+    #db = sqlite3.connect("../glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
     cursor.execute('DELETE FROM games')
@@ -25,9 +26,11 @@ def update_games():
             epicaccs.append(epicacc)
     for steam in steamaccs:
         games = get_steam_games(steam[0], steam[1])
+        print(games)
+        print(steam)
         for game in games:
             if 'Test' not in game['name']:
-                cursor.execute("SELECT id FROM accounts WHERE accountid = ?", (steam,))
+                cursor.execute("SELECT id FROM accounts WHERE accountid = ?", (steam[0],))
                 ids = cursor.fetchall()
                 ids = [id[0] for id in ids]
                 accid = ids[0]
@@ -69,6 +72,7 @@ def searchforgames():
     for game in installedGames:
         cursor.execute("UPDATE Games SET installed = 1 WHERE GameName = ?", (game,))
 if __name__ == '__main__':
+    update_games()
     searchforgames()
 
 
