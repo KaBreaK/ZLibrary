@@ -64,7 +64,7 @@ function createTrayIcon() {
                 try {
                     const response = axios.post('http://localhost:8090/shutdown');
                 } catch (error) {
-                    console.error(`zerwano polaczenie`);
+                    console.error(`zerwano polaczenie `);
                 }
                 if (flaskProcess) {
                     flaskProcess.kill();
