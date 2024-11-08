@@ -9,13 +9,22 @@
 <h1>Gry:</h1>
 <div class="container">
 <div id="gamesList"></div><div id="gameDetails">
-    <a href="http://localhost:8090/authorize/steam "><button>logowanie steam</button></a>
+    <button onclick="LoginViaSteam()">logowanie steam</button>
 </div>
 </div>
 
 
 </body>
 <script>
+    const { ipcRenderer } = require('electron');
+    async function LoginViaSteam(){
+          try {
+            await ipcRenderer.invoke('LoginViaSteam');
+            console.log("JESTEM")
+          } catch (error) {
+            console.error('Błąd podczas logowania przez Steam:', error);
+          }
+        }
     function GetGames() {
     fetch('http://localhost:8090/api/games')
         .then(response => {
@@ -24,7 +33,7 @@
             }
             return response.json();
         })        .then(data => {
-            document.getElementById("gamesList").innerHTML = JSON.stringify(data, null, 2); // Formatowanie dla lepszego wyglądu
+            document.getElementById("gamesList").innerHTML = JSON.stringify(data, null, 2);
             console.log(data);
         })
         .catch(error => {
