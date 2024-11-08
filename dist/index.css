@@ -1,0 +1,10 @@
+body{
+    background-color: red;
+}
+.container {
+    display: flex;
+}
+#gamesList{
+    width: 50%;
+    padding-right: 10%;
+}

@@ -2,12 +2,24 @@ const { app, BrowserWindow, screen, Tray, Menu, ipcMain } = require('electron');
 const { exec, spawn } = require('child_process');
 const axios = require('axios');
 const path = require('path');
+const fs = require('fs');
 
 let flaskProcess;
 let mainWindow;
 let tray;
 let isQuitting = false;
 
+function getSettings() {
+    const settingsPath = path.join(__dirname, 'static/settings.json');
+    try {
+        const data = fs.readFileSync(settingsPath, 'utf8');
+        const settings = JSON.parse(data);
+        return settings;
+    } catch (err) {
+        console.error('Błąd podczas odczytu pliku settings.json:', err);
+        return null;
+    }
+}
 async function checkIfServerRunning() {
     try {
         await axios.get('http://localhost:8090/');
@@ -47,7 +59,7 @@ async function createWindow() {
         width: Math.floor(width * 0.8),
         height: Math.floor(height * 0.8),
         x: Math.floor((width - width * 0.73) / 2),
-        y: Math.floor((height - height * 0.55) / 2),
+        y: Math.floor((height - height * 0.8) / 2),
         transparent: true,
         frame: true,
         resizable: true,
@@ -66,7 +78,7 @@ async function createWindow() {
     }
 
     //mainWindow.loadURL('http://localhost:8090/');
-    mainWindow.loadURL('http://localhost:8091/');
+    mainWindow.loadURL('http://localhost:8090/');
     mainWindow.webContents.openDevTools();
 
     //zamykanieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
@@ -75,6 +87,40 @@ async function createWindow() {
     });
     ipcMain.handle('LoginViaSteam', async () => {
         createLoginWindow('steam')
+    });
+    ipcMain.handle('LoginViaEpic', async () => {
+        createLoginWindow('steam')
+    });
+    ipcMain.handle('OpenGame', async (platform, login, ganeIds) => {
+        steampath = getSettings().steamPath
+        if (platform == 'Steam'){
+            const command = `"${steampath}Steam.exe" -login ${login} -applaunch ${gameId}`;
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Błąd: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.error(`Błąd: ${stderr}`);
+                    return;
+                }
+                console.log(`Wynik: ${stdout}`);
+            });
+        }else if (platform == 'epic'){
+            steampath = getSettings().epicpath;
+            const command = `"${epicGamesPath}EpicGames.exe" com.epicgames.launcher://apps/${gameId}?action=launch&silent=true`;
+                exec(command, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`Błąd: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.error(`Błąd: ${stderr}`);
+                        return;
+                    }
+                    console.log(`Wynik: ${stdout}`);
+                });
+        }
     });
     function closeappbutton() {
         //killflask();

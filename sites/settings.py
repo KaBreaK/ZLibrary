@@ -13,43 +13,37 @@ steam_openid_url = 'https://steamcommunity.com/openid/login'
 
 steam_id_re = re.compile('https://steamcommunity.com/openid/id/(.*?)$')
 
-@settings_bp.route('/settings', methods=['GET', 'POST'])
-def settings():
-    isaccount = False
+@settings_bp.route('/api/add_account/', methods=['POST'])
+def add_account():
+    data = request.get_json()
+    steam_id = data.get('steam_id')
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()
-    if request.method == 'POST':
-        steam_id = request.form['steam_id']
-        cursor.execute('SELECT COUNT(*) FROM accounts WHERE accountid = ?', (steam_id,))
-        if cursor.fetchone()[0] == 0:
-            cursor.execute('INSERT INTO accounts (accountid, platform, accountName) VALUES (?, ?, ?)', (steam_id, 'Steam', get_steam_name(steam_id),))
-        session['edit_mode'] = False
-    cursor.execute('SELECT accountid FROM accounts')
-    accounts = cursor.fetchall()
-    accounts = [account[0] for account in accounts]
-    if accounts:
-        isaccount = True
-    db.commit()
-    db.close()
-    return render_template('settings.html', accounts=accounts, isaccount=isaccount)
-
-@settings_bp.route('/settings/enable_edit_mode')
-def enable_edit_mode():
-    session['edit_mode'] = True
-    return redirect(url_for('settings.settings'))
-
-
-@settings_bp.route('/settings/delete_account/<steam_id>')
-def delete_account(steam_id):
-    db = sqlite3.connect("static/glibrary.db")
-    cursor = db.cursor()
-    cursor.execute('DELETE FROM accounts WHERE acountid = ?', (steam_id,))
-    session.modified = True
+    cursor.execute('SELECT COUNT(*) FROM accounts WHERE accountid =?', (steam_id,))
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('INSERT INTO accounts (accountid, platform, accountName) VALUES (?,?,?)', (steam_id, 'Steam', get_steam_name(steam_id),))
     db.commit()
     db.close()
     update_games()
-    previous_page = request.referrer
-    return redirect(previous_page)
+    return redirect('/')
+
+
+@settings_bp.route('/api/delete_account', methods=['POST'])
+def delete_account():
+    data = request.get_json()
+    accountName = data.get('accountName')
+    platform = data.get('platform')
+    if not accountName or not platform:
+        return "Account name or platform missing", 400
+    db = sqlite3.connect("static/glibrary.db")
+    cursor = db.cursor()
+    cursor.execute('DELETE FROM accounts WHERE accountName = ? AND platform = ?', (accountName, platform))
+    db.commit()
+    db.close()
+    update_games()
+
+    return redirect('/')
+
 
 @settings_bp.route("/auth/steam")
 def login():
