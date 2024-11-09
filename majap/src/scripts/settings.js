@@ -22,6 +22,15 @@ async function LoginViaSteam(){
             console.error('Błąd podczas logowania przez Steam:', error);
           }
 }
+async function addpath(){
+    try {
+        await ipcRenderer.invoke('addpath');
+        console.log("JESTEM")
+    } catch (error) {
+        console.error('Błąd podczas logowania przez Steam:', error);
+    }
+
+}
 function LoginViaEpic(){}
 function LoginViaBattleNet(){}
 function SyncGames(){

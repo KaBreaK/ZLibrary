@@ -3,5 +3,11 @@ body {
     Arial, sans-serif;
   max-width: 38rem;
   padding: 2rem;
+  background: transparent;
+}
+.body{
   background: #141415;
+  height: 100vh;
+  width: 100vh;
+  border-radius: 50rem;
 }

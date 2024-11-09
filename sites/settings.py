@@ -115,9 +115,10 @@ def loginegs():
 
 @settings_bp.route('/addpath', methods=['POST'])
 def add_path():
-    steam_path = request.form.get('steamPath')
-    if steam_path:
-        print(steam_path)
-        return f"Ścieżka Steam to: {steam_path}"
-    return "Nie wybrano żadnej ścieżki"
-    return  jsonify({'success': True})
+    data = request.get_json()
+    path = data.get('path')
+    print(path)
+    if path:
+        print(path)
+        return jsonify({'success': True})
+    return jsonify({'success': False})

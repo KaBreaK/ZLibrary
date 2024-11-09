@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, Tray, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, screen, Tray, Menu, ipcMain, dialog } = require('electron');
 const { exec, spawn } = require('child_process');
 const axios = require('axios');
 const path = require('node:path');
@@ -29,12 +29,17 @@ const createWindow = () => {
     width: 800,
     height: 600,
     resizable: false,
+    transparent: true,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       preload: path.join(__dirname, 'preload.js'),
     },
   });
+  ipcMain.handle('addpath', async () => {
+      createLoginWindow('addpath')
+  })
   ipcMain.handle('LoginViaSteam', async () => {
       createLoginWindow('steam')
   });
@@ -126,6 +131,22 @@ async function createLoginWindow(platform) {
     const session = loginWindow.webContents.session;
 
     await session.clearStorageData({ storages: ['cookies'] });
+    if (platform === 'addpath') {
+        dialog.showOpenDialog(mainWindow, {
+            properties: ['openDirectory']
+        }).then(result => {
+            if (result.canceled) return;
+            console.log('Selected path:', result.filePaths[0]);
+            fetch('http://localhost:8090/addpath', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ path: result.filePaths[0] })
+            })
+            loginWindow.close();
+        })
+    }
     if (platform === 'steam') {
         loginWindow.loadURL('http://localhost:8090/auth/steam');
     }
@@ -142,8 +163,6 @@ async function createLoginWindow(platform) {
       })();
     `).then(authorizationCode => {
                     console.log("Authorization Code: ", authorizationCode);
-
-                    // Wysłanie kodu autoryzacji do serwera Flask za pomocą POST
                     fetch('http://localhost:8090/auth/egs', {
                         method: 'POST',
                         headers: {
@@ -154,8 +173,6 @@ async function createLoginWindow(platform) {
                         .then(response => response.json())
                         .then(data => console.log('Success:', data))
                         .catch((error) => console.error('Error:', error));
-
-                    // Zamknięcie okna logowania
                     loginWindow.close();
                 }).catch(err => {
                     console.error("Błąd podczas uzyskiwania kodu autoryzacji:", err);
