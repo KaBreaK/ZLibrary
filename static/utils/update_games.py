@@ -26,8 +26,6 @@ def update_games():
             epicaccs.append(epicacc)
     for steam in steamaccs:
         games = get_steam_games(steam[0], steam[1])
-        print(games)
-        print(steam)
         for game in games:
             if 'Test' not in game['name']:
                 cursor.execute("SELECT id FROM accounts WHERE accountid = ?", (steam[0],))
@@ -56,21 +54,28 @@ def update_games():
             pass
     db.commit()
     db.close()
+    searchforgames()
 
 
 def searchforgames():
-    with open("../settings.json", 'r') as f:
+    with open("static/settings.json", 'r') as f:
         config = json.load(f)
         libaryPaths = config['gameLibraries']
-    db = sqlite3.connect("../glibrary.db")
+    print(libaryPaths)
+    db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
-    cursor.execute("UPDATE Games SET installed  = 0")
+    cursor.execute("UPDATE games SET installed  = 0")
     installedGames = []
     for path in libaryPaths:
+        print(os.listdir(path))
+        print("123")
         installedGames = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
     for game in installedGames:
-        cursor.execute("UPDATE Games SET installed = 1 WHERE GameName = ?", (game,))
+        cursor.execute("UPDATE games SET installed = 1 WHERE GameName = ?", (game,))
+    print("chyba dziala")
+    db.commit()
+    db.close()
 if __name__ == '__main__':
     update_games()
     searchforgames()

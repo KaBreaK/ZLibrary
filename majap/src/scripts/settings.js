@@ -21,4 +21,18 @@ async function LoginViaSteam(){
           } catch (error) {
             console.error('Błąd podczas logowania przez Steam:', error);
           }
-        }
+}
+function LoginViaEpic(){}
+function LoginViaBattleNet(){}
+function SyncGames(){
+            fetch("http://localhost:8090/api/sync", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(response => {
+                if (response.ok) {
+                    console.log("Synchronizacja zakończona.");
+                }
+            })
+}

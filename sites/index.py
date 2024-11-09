@@ -96,7 +96,7 @@ def api_test():
 @index_bp.route('/api/sync')
 def sync_games():
     update_games()
-    return redirect('/')
+    return "abc"
 @index_bp.route('/api/fav', methods=['POST'])
 def updategamespec():
     db = sqlite3.connect("static/glibrary.db")
