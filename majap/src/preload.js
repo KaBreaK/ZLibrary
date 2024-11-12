@@ -6,3 +6,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electron', {
   loginViaSteam: () => ipcRenderer.invoke('LoginViaSteam')
 });
+contextBridge.exposeInMainWorld('electron', {
+  loginViaEpic: () => ipcRenderer.invoke('LoginViaEpic')
+});

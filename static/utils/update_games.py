@@ -46,6 +46,7 @@ def update_games():
         service = EpicGamesStoreService()
         try:
             games = service.run(epic)
+            print(games)
             for game in games:
                 cursor.execute(
                     'INSERT INTO games (gameName, epicRunUrl, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?,?)',
@@ -54,10 +55,11 @@ def update_games():
             pass
     db.commit()
     db.close()
-    searchforgames()
+    steamIgmaes()
+    epicIgames()
 
 
-def searchforgames():
+def steamIgmaes():
     with open("static/settings.json", 'r') as f:
         config = json.load(f)
         libaryPaths = config['gameLibraries']
@@ -65,20 +67,37 @@ def searchforgames():
     db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
-    cursor.execute("UPDATE games SET installed  = 0")
+    cursor.execute("UPDATE games SET installed  = 0 WHERE account_id IN (SELECT id FROM Accounts WHERE platform = 'Steam')")
     installedGames = []
     for path in libaryPaths:
-        print(os.listdir(path))
-        print("123")
         installedGames = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
     for game in installedGames:
         cursor.execute("UPDATE games SET installed = 1 WHERE GameName = ?", (game,))
-    print("chyba dziala")
+    db.commit()
+    db.close()
+
+def epicIgames():
+    db = sqlite3.connect("static/glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+    cursor.execute("UPDATE games SET installed  = 0 WHERE account_id IN (SELECT id FROM Accounts WHERE platform = 'EPIC')")
+    manifests_path = "C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests"
+    if not os.path.exists(manifests_path):
+        print("No valid path for EGS games manifests in %s", manifests_path)
+        return
+    for manifest in os.listdir(manifests_path):
+        if not manifest.endswith(".item"):
+            continue
+        with open(os.path.join(manifests_path, manifest), encoding="utf-8") as manifest_file:
+            manifest_content = json.loads(manifest_file.read())
+        if manifest_content["MainGameAppName"] != manifest_content["AppName"]:
+            continue
+        cursor.execute("UPDATE games SET installed = 1 WHERE GameName = ?", (manifest_content["AppName"],))
     db.commit()
     db.close()
 if __name__ == '__main__':
     update_games()
-    searchforgames()
+    steamIgmaes()
 
 
 
