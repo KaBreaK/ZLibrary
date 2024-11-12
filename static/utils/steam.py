@@ -1,4 +1,6 @@
 import sqlite3
+from dbm import error
+
 import requests
 import os
 import re
@@ -19,6 +21,8 @@ def loadSteamAPI():
     for row in rows:
         if row['steamAPI']:
             STEAM_API_KEY = row['steamAPI']
+    db.close()
+
 
 
 
@@ -38,7 +42,7 @@ def get_lastplayed_from_disc(steamid):
 
 def get_steam_games(steam_id, steamapi):
     loadSteamAPI()
-    url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+    url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
     params = {
         'key': (steamapi if steamapi else STEAM_API_KEY),
         'steamid': steam_id,
@@ -57,7 +61,7 @@ def get_steam_games(steam_id, steamapi):
     else:
         return []
 def get_steam_name(steamid):
-    try:
+    #try:
         steampath = getsteampath()
         config_path = f'{steampath}\\config\\loginusers.vdf'
         with open(config_path, 'r', encoding='utf-8') as file:
@@ -65,9 +69,36 @@ def get_steam_name(steamid):
         steamid_str = str(steamid)
         user_pattern = re.compile(r'"' + re.escape(steamid_str) + r'"\s*{[^{}]*"AccountName"\s*"([^"]+)"')
         match = user_pattern.search(content)
+        print(match.group(1))
+        print("abc")
         if match:
             return match.group(1)
         else:
             return "Konto"
-    except:
-        return "Konto"
+    #except:
+    #    return "Konto"
+
+def get_steam_ids():
+    db = sqlite3.connect("../glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+    try:
+        #steampath = getsteampath()
+        config_path = "C:\\Program Files (x86)\\Steam\\config\\config.vdf"
+        #config_path = f'{steampath}\\config\\config.vdf'
+        with open(config_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        pattern = r'"SteamID"\s+"(\d+)"'
+        steam_ids = re.findall(pattern, content)
+        print(steam_ids)
+        for steam_id in steam_ids:
+            cursor.execute('SELECT 1 FROM accounts WHERE accountid = ?', (steam_id,))
+            exists = cursor.fetchone()
+            if  not exists:
+                cursor.execute('INSERT INTO accounts (accountName, platform, accountid) VALUES (?, ?, ?)', (get_steam_name(steam_id), "Steam", steam_id))
+    except error:
+        return error
+    db.commit()
+    db.close()
+if __name__ == '__main__':
+    print(get_steam_ids())
