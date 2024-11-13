@@ -1,13 +1,27 @@
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
-  max-width: 38rem;
-  padding: 2rem;
-  background: transparent;
+  font-family: "Outfit";
+  background:transparent;
+  height: 600px;
+  width: 900px;
+  overflow-x: hidden;
 }
 .body{
+  border-radius: 0.5rem;
+  width: 100%;
+  height: 100%;
   background: #141415;
-  height: 100vh;
-  width: 100vh;
-  border-radius: 50rem;
+  overflow-x: hidden;
+  color: white;
+  margin: 0px;
+  padding: 2rem;
+}
+.logo{
+  width: 6rem;
+  height:4rem;
+}
+.search{
+
+}
+header{
+  display: flex;
 }
