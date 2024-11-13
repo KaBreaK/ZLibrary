@@ -220,6 +220,6 @@ class EpicGamesStoreService:
 
 if __name__ == "__main__":
     service = EpicGamesStoreService()
-    games = service.run('4a184f36a3ea4c99ae905b21e4b4a631')
+    games = service.run('sss5555')
     for game in games:
         print(game)

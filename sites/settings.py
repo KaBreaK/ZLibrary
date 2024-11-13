@@ -107,7 +107,7 @@ def loginegs():
         for row in results:
             account_id = row[0]
         for game in games:
-            cursor.execute('INSERT INTO games (gameName, epicRunUrl, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?,?)', (game['sandboxName'], game['runUrl'], game['gameimage'], game['totalTime']/60, 0, account_id))
+            cursor.execute('INSERT INTO games (gameName, epicRunUrl, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?,?)', (game['sandboxName'], game['runUrl'], (game['gameimage']), game['totalTime']/60, 0, account_id))
 
     db.commit()
     db.close()

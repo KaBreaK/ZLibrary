@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 import sqlite3
 from static.utils.update_games import update_games
-
+import asyncio
 index_bp = Blueprint('index_bp', __name__)
 
 

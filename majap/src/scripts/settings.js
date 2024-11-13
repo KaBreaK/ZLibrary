@@ -31,7 +31,14 @@ async function addpath(){
     }
 
 }
-function LoginViaEpic(){}
+async function LoginViaEpic(){
+    try {
+        await ipcRenderer.invoke('LoginViaEpic');
+        console.log("JESTEM")
+    } catch (error) {
+        console.error('Błąd podczas logowania przez Steam:', error);
+    }
+}
 function LoginViaBattleNet(){}
 function SyncGames(){
             fetch("http://localhost:8090/api/sync", {

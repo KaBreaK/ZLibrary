@@ -37,7 +37,7 @@ def init_db():
         `GameName` TEXT NOT NULL,
         `epicRunUrl` TEXT,
         `steamid` INTEGER,
-        `gamePhoto` TEXT NOT NULL,
+        `gamePhoto` TEXT,
         `playTime` INTEGER,
         `lastPlayed` INTEGER,
         `installed` BOOLEAN,
