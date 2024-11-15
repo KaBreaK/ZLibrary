@@ -3,11 +3,22 @@ body {
     Arial, sans-serif;
   max-width: 38rem;
   padding: 2rem;
-  background: transparent;
+  background: red;
 }
 .body{
   background: #141415;
   height: 100vh;
   width: 100vh;
   border-radius: 50rem;
+}
+#statusOverlay {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  background-color: black;
+  z-index: 1000;
 }

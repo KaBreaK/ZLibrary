@@ -61,43 +61,43 @@ def get_steam_games(steam_id, steamapi):
     else:
         return []
 def get_steam_name(steamid):
-    #try:
+    print("123")
+    try:
         steampath = getsteampath()
         config_path = f'{steampath}\\config\\loginusers.vdf'
+        #config_path = "C:\\Program Files (x86)\\Steam\\config\\loginusers.vdf"
         with open(config_path, 'r', encoding='utf-8') as file:
             content = file.read()
         steamid_str = str(steamid)
         user_pattern = re.compile(r'"' + re.escape(steamid_str) + r'"\s*{[^{}]*"AccountName"\s*"([^"]+)"')
         match = user_pattern.search(content)
-        print(match.group(1))
         print("abc")
         if match:
             return match.group(1)
         else:
-            return "Konto"
-    #except:
-    #    return "Konto"
+                return "Konto"
+    except:
+        return "Konto"
 
 def get_steam_ids():
-    db = sqlite3.connect("../glibrary.db")
+    db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
     try:
-        #steampath = getsteampath()
-        config_path = "C:\\Program Files (x86)\\Steam\\config\\config.vdf"
-        #config_path = f'{steampath}\\config\\config.vdf'
+        steampath = getsteampath()
+        #config_path = "C:\\Program Files (x86)\\Steam\\config\\config.vdf"
+        config_path = f'{steampath}\\config\\config.vdf'
         with open(config_path, 'r', encoding='utf-8') as file:
             content = file.read()
         pattern = r'"SteamID"\s+"(\d+)"'
         steam_ids = re.findall(pattern, content)
-        print(steam_ids)
         for steam_id in steam_ids:
             cursor.execute('SELECT 1 FROM accounts WHERE accountid = ?', (steam_id,))
             exists = cursor.fetchone()
             if  not exists:
                 cursor.execute('INSERT INTO accounts (accountName, platform, accountid) VALUES (?, ?, ?)', (get_steam_name(steam_id), "Steam", steam_id))
     except error:
-        return error
+        return None
     db.commit()
     db.close()
 if __name__ == '__main__':

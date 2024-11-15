@@ -70,7 +70,10 @@ def steamIgmaes():
     cursor.execute("UPDATE games SET installed  = 0 WHERE account_id IN (SELECT id FROM Accounts WHERE platform = 'Steam')")
     installedGames = []
     for path in libaryPaths:
-        installedGames = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+        try:
+            installedGames = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+        except:
+            pass
     for game in installedGames:
         cursor.execute("UPDATE games SET installed = 1 WHERE GameName = ?", (game,))
     db.commit()

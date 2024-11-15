@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 import sqlite3
 from static.utils.update_games import update_games
+from static.utils.steam import get_steam_ids
 import asyncio
 index_bp = Blueprint('index_bp', __name__)
 
@@ -90,12 +91,20 @@ def get_games():
 def index():
     games, accounts = get_games()
     return jsonify({"games": games, "accounts": accounts})
-@index_bp.route('/api/test')
+@index_bp.route('/api/status')
 def api_test():
-    return {"message": "API works!"}
+
+    return {
+    "status": "running",
+    "message": "Server is operational"
+}
 @index_bp.route('/api/sync')
 def sync_games():
     update_games()
+    return "abc"
+@index_bp.route('/api/start', methods=['GET'])
+def onstart():
+    get_steam_ids()
     return "abc"
 @index_bp.route('/api/fav', methods=['POST'])
 def updategamespec():

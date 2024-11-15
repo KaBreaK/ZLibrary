@@ -2,6 +2,7 @@ const { app, BrowserWindow, screen, Tray, Menu, ipcMain, dialog } = require('ele
 const { exec, spawn } = require('child_process');
 const axios = require('axios');
 const path = require('node:path');
+const http = require('http');
 
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -20,9 +21,9 @@ async function startFlaskServer() {
     flaskProcess.on('error', (error) => {
         console.error(`Failed to start Flask process: ${error.message}`);
     });
+
 }
 const createWindow = () => {
-  // Create the browser window.
   startFlaskServer();
 
   mainWindow = new BrowserWindow({
