@@ -11,16 +11,20 @@ def getsteampath():
         return config['steamPath']
 
 STEAM_API_KEY = '5D2C684722E3A769185AB7B84EA7A1EB'
-def loadSteamAPI():
+def loadSteamAPI(steam_id):
     db = sqlite3.connect("static/glibrary.db")
     #db = sqlite3.connect("../glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
-    cursor.execute('SELECT steamAPI FROM accounts')
+    cursor.execute('SELECT steamid, steamAPI FROM accounts')
     rows = cursor.fetchall()
     for row in rows:
         if row['steamAPI']:
-            STEAM_API_KEY = row['steamAPI']
+            steamAPI = row['steamAPI']
+        if row['steamAPI'] and row['steamid'] == steam_id:
+            steamAPI = row['steamAPI']
+            return steamAPI
+        return steamAPI if steamAPI else None
     db.close()
 
 
@@ -39,12 +43,16 @@ def get_lastplayed_from_disc(steamid):
     for app_id, last_played in matches:
         tab.append({'gameid': int(app_id), 'lastplayed': last_played})
     return tab
-
+def without_api(steam_id):
+    
+    return None
 def get_steam_games(steam_id, steamapi):
-    loadSteamAPI()
+    API = loadSteamAPI(steam_id)
+    if not API:
+        return without_api(steam_id)
     url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
     params = {
-        'key': (steamapi if steamapi else STEAM_API_KEY),
+        'key': (API),
         'steamid': steam_id,
         'include_appinfo': 'true',
         'include_played_free_games': 'true',
