@@ -1,6 +1,6 @@
 import sqlite3
 from dbm import error
-
+from bs4 import BeautifulSoup
 import requests
 import os
 import re
@@ -16,12 +16,13 @@ def loadSteamAPI(steam_id):
     #db = sqlite3.connect("../glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
-    cursor.execute('SELECT steamid, steamAPI FROM accounts')
+    cursor.execute('SELECT accountid, steamAPI FROM accounts')
     rows = cursor.fetchall()
+    steamAPI = None
     for row in rows:
         if row['steamAPI']:
             steamAPI = row['steamAPI']
-        if row['steamAPI'] and row['steamid'] == steam_id:
+        if row['steamAPI'] and row['accountid'] == steam_id:
             steamAPI = row['steamAPI']
             return steamAPI
         return steamAPI if steamAPI else None
@@ -44,7 +45,23 @@ def get_lastplayed_from_disc(steamid):
         tab.append({'gameid': int(app_id), 'lastplayed': last_played})
     return tab
 def without_api(steam_id):
-    
+    games = []
+    steam_profile_url = f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'
+    cookies = {
+        'steamLoginSecure': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAxNl8yNThFMTJGMV82QTQxOSIsICJzdWIiOiAiNzY1NjExOTk4MDcwODgyNTYiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3MzUyNDQ0NjAsICJuYmYiOiAxNzI2NTE2OTI4LCAiaWF0IjogMTczNTE1NjkyOCwgImp0aSI6ICIwMDA0XzI1OEUxMkY4X0U4RjUxIiwgIm9hdCI6IDE3MzUxNTY5MjgsICJydF9leHAiOiAxNzUzMjgwNjEwLCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiODMuMzEuMTM2Ljk4IiwgImlwX2NvbmZpcm1lciI6ICI4My4zMS4xMzYuOTgiIH0.Gxg95F42jtXuHEYooqE7fMDRwnWJRekBIFMO65yCA4lfXSG0DzrMeDkGH_IdOylvoBBR_umRDmprnEbu289QBA",
+        'steamparental': "1733786557%7C%7CjGhHJ77zaBm%2BCHXrrsUxRRHxioT1%2Fm9T74CRzWLLpMIOssKfpQGfuyw%2F%2BT1Qxy8e"
+    }
+    response = requests.get(steam_profile_url, cookies=cookies)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        data_json = soup.find('template', {'data-profile-gameslist': True})['data-profile-gameslist']
+        data = json.loads(data_json.replace('&quot;', '"'))
+        dupa = data.get('rgGames', [])
+        games = [{'appid': game['appid'], 'name': game['name'], 'playtime_forever': game['playtime_forever']} for game in dupa]
+        for game in games:
+            print(games)
+        return games
+
     return None
 def get_steam_games(steam_id, steamapi):
     API = loadSteamAPI(steam_id)
