@@ -48,7 +48,7 @@ def without_api(steam_id):
     games = []
     steam_profile_url = f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'
     cookies = {
-        'steamLoginSecure': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAxNl8yNThFMTJGMV82QTQxOSIsICJzdWIiOiAiNzY1NjExOTk4MDcwODgyNTYiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3MzUyNDQ0NjAsICJuYmYiOiAxNzI2NTE2OTI4LCAiaWF0IjogMTczNTE1NjkyOCwgImp0aSI6ICIwMDA0XzI1OEUxMkY4X0U4RjUxIiwgIm9hdCI6IDE3MzUxNTY5MjgsICJydF9leHAiOiAxNzUzMjgwNjEwLCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiODMuMzEuMTM2Ljk4IiwgImlwX2NvbmZpcm1lciI6ICI4My4zMS4xMzYuOTgiIH0.Gxg95F42jtXuHEYooqE7fMDRwnWJRekBIFMO65yCA4lfXSG0DzrMeDkGH_IdOylvoBBR_umRDmprnEbu289QBA",
+        'steamLoginSecure': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwN18yNThFMTMzNF8xMTA4OSIsICJzdWIiOiAiNzY1NjExOTk4MDcwODgyNTYiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3MzU1ODYwODcsICJuYmYiOiAxNzI2ODU5Mzc2LCAiaWF0IjogMTczNTQ5OTM3NiwgImp0aSI6ICIwMDA0XzI1OEUxMzNDX0JFNDYyIiwgIm9hdCI6IDE3MzU0OTkzNzYsICJydF9leHAiOiAxNzUzNDgyODcyLCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiODMuMzEuMTM2Ljk4IiwgImlwX2NvbmZpcm1lciI6ICI4My4zMS4xMzYuOTgiIH0.56jtW_QlKQrEyUhEFw4r2eCtWgjWfcXTaKeL6ycRrff9KRgw77duzdm6MHW5l5ENFV498nm7NoTKAsmHPTmJDQ",
         'steamparental': "1733786557%7C%7CjGhHJ77zaBm%2BCHXrrsUxRRHxioT1%2Fm9T74CRzWLLpMIOssKfpQGfuyw%2F%2BT1Qxy8e"
     }
     response = requests.get(steam_profile_url, cookies=cookies)
@@ -58,8 +58,8 @@ def without_api(steam_id):
         data = json.loads(data_json.replace('&quot;', '"'))
         dupa = data.get('rgGames', [])
         games = [{'appid': game['appid'], 'name': game['name'], 'playtime_forever': game['playtime_forever']} for game in dupa]
-        for game in games:
-            print(games)
+        # for game in games:
+        #     print(games)
         return games
 
     return None

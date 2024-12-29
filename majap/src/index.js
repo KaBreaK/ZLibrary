@@ -31,19 +31,21 @@ async function startFlaskServer() {
 }
 const createWindow = () => {
   startFlaskServer();
-
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: Math.floor(width * 0.7),
+    height: Math.floor(height * 0.7),
+    y: Math.floor((height - Math.floor(height * 0.7)) / 2) + 0,
     resizable: false,
     transparent: true,
-    frame: true,
+    frame: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       preload: path.join(__dirname, "preload.js"),
     },
   });
+  console.log(Math.floor((height - Math.floor(height * 0.7)) / 2) + 150)
   ipcMain.handle("addpath", async () => {
     createLoginWindow("addpath");
   });
@@ -61,7 +63,7 @@ const createWindow = () => {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "index.html"));
+  mainWindow.loadFile(path.join(__dirname, "sites/index.html"));
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
