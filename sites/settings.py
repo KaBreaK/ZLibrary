@@ -29,16 +29,14 @@ def add_account():
     return redirect('/')
 
 
-@settings_bp.route('/api/delete_account', methods=['POST'])
+@settings_bp.route('/api/logout', methods=['GET'])
 def delete_account():
-    data = request.get_json()
-    accountName = data.get('accountName')
-    platform = data.get('platform')
-    if not accountName or not platform:
-        return "Account name or platform missing", 400
+    id = request.args.get('id')
+    if not id:
+        return "No account id provided", 400
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()
-    cursor.execute('DELETE FROM accounts WHERE accountName = ? AND platform = ?', (accountName, platform))
+    cursor.execute('DELETE FROM accounts WHERE id = ?', (id))
     db.commit()
     db.close()
     update_games()

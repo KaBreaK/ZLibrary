@@ -4,8 +4,27 @@ from static.utils.update_games import update_games
 from static.utils.steam import get_steam_ids
 import asyncio
 index_bp = Blueprint('index_bp', __name__)
+def get_accounts():
+    db = sqlite3.connect("static/glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
 
+    cursor.execute("SELECT * FROM accounts")
 
+    rows = cursor.fetchall()
+
+    accounts = []
+
+    for row in rows:
+        accounts.append({
+            'id': row['id'],
+            'accountName': row['accountName'],
+            'platform': row['platform'],
+           'steamAPI': row['steamAPI'],
+            'accountid': row['accountid']
+        })
+
+    return accounts
 def get_games():
     db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
@@ -88,6 +107,10 @@ def get_games():
 
     return games, accounts
 
+@index_bp.route("/api/accounts", methods=["GET"])
+def accounts():
+    accounts = get_accounts()
+    return jsonify(accounts)
 @index_bp.route("/api/games", methods=["GET"])
 def index():
     games, accounts = get_games()

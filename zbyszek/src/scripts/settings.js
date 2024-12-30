@@ -21,6 +21,7 @@ async function LoginViaSteam(){
           } catch (error) {
             console.error('Błąd podczas logowania przez Steam:', error);
           }
+          GetAccount()
 }
 
 async function addpath(){
@@ -39,6 +40,7 @@ async function LoginViaEpic(){
     } catch (error) {
         console.error('Błąd podczas logowania przez EPIC:', error);
     }
+    GetAccount()
 }
 async function LoginViaEA(){
           try {
@@ -47,6 +49,7 @@ async function LoginViaEA(){
           } catch (error) {
             console.error('Błąd podczas logowania przez EA:', error);
           }
+          GetAccount()
 }
 function LoginViaBattleNet(){}
 function SyncGames(){
@@ -61,3 +64,60 @@ function SyncGames(){
                 }
             })
 }
+function GetAccount() {
+    fetch('http://localhost:8090/api/accounts')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            const steamAcc = document.getElementById('steam-accounts');
+            const epicAcc = document.getElementById('epic-accounts');
+            const eaAcc = document.getElementById('ea-accounts');
+            steamAcc.innerHTML = '';
+            epicAcc.innerHTML = '';
+            eaAcc.innerHTML = '';
+            data.forEach(account => {
+                const li = document.createElement('li');
+                li.textContent = account.accountName;
+                const logoutButton = document.createElement('button');
+                logoutButton.textContent = 'Wyloguj';
+                logoutButton.onclick = () => logoutAccount(account.id, li);
+                li.appendChild(logoutButton);
+                switch (account.platform) {
+                    case 'Steam':
+                        steamAcc.appendChild(li);
+                        break;
+                    case 'EPIC':
+                        epicAcc.appendChild(li);
+                        break;
+                    case 'EA':
+                        eaAcc.appendChild(li);
+                        break;
+                    default:
+                        console.error('Unknown platform: ' + account.platform);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
+
+function logoutAccount(accountId, liElement) {
+    fetch(`http://localhost:8090/api/logout?id=${accountId}`, { method: 'GET' })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            console.log(`Account with id ${accountId} logged out successfully`);
+            liElement.remove();
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
+
+window.onload = GetAccount;
+

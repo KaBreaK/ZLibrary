@@ -1,60 +1,13 @@
-<!--
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>NigArchive</title>
-      <style>
-          body{
-              background: yellow;
-          }
-      </style>
-  </head>
-  <body>
-  <div class="body">
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
-    <a href="index.html"><button>NigArchive</button></a>
-  <button onclick="GetGames()">GRY</button>
-  <button onclick="LoginViaEpic()">EPIC</button>
-  <button onclick="LoginViaSteam()">STEAM</button>
-  <button onclick="addpath()">ADDPATH</button>
-  <button onclick="SyncGames()">SYNCGAMES</button>
-
-      </div>
-  </body>
-<script src="../scripts/settings.js"></script>
-</html>-->
-<!--
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>NigArchive</title>
-    <link rel="stylesheet" href="../css/index.css" />
-  </head>
-  <body>
-    <div id="overview">
-      <h1>�� Hello World!</h1>
-      <p>Welcome to your Electron application.</p>
-      <a href="settings.html"><button>Settings</button></a>
-      <button onclick="logout()">LOGOUT</button>
-    </div>
-  </body>
-<script src="../scripts/index.js"></script>
-</html>
--->
-<!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/index.css" />
-    <title>Game Library</title>
+    <title>Ustawienia Kont</title>
+    <link rel="stylesheet" href="../css/settings.css">
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
+<div class="sidebar">
         <img src="../images/logo.png" alt="logo" id="logo" width="80%"/>
         <h2>Biblioteka</h2>
         <ul>
@@ -64,23 +17,35 @@
             <li><a href="settings.html">Settings</a></li>
         </ul>
     </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <header>
-            <h1>Settings</h1>
-        </header>
-
-        <div class="game-grid">
-            <button onclick="GetGames()">GRY</button>
-            <button onclick="LoginViaEpic()">EPIC</button>
-            <button onclick="LoginViaSteam()">STEAM</button>
-            <button onclick="addpath()">ADDPATH</button>
-            <button onclick="SyncGames()">SYNCGAMES</button>
-        </div>
-    </div>
-<script src="../scripts/settings.js"></script>
+    <header>
+        <h1>Ustawienia Kont</h1>
+    </header>
+<div id="overview"></div>
+    <main>
+        <section class="account-list">
+            <div class="account-section">
+                <h2>Steam</h2>
+                <ul id="steam-accounts">
+                    <!-- Lista kont Steam -->
+                </ul>
+                <button class="add-account" onclick="LoginViaSteam()">Dodaj konto Steam</button>
+            </div>
+            <div class="account-section">
+                <h2>Epic</h2>
+                <ul id="epic-accounts">
+                    <!-- Lista kont Epic -->
+                </ul>
+                <button class="add-account" onclick="LoginViaEpic()">Dodaj konto Epic</button>
+            </div>
+            <div class="account-section">
+                <h2>EA</h2>
+                <ul id="ea-accounts">
+                    <!-- Lista kont EA -->
+                </ul>
+                <button class="add-account" onclick="LoginViaEA()">Dodaj konto EA</button>
+            </div>
+        </section>
+    </main>
+    <script src="../scripts/settings.js"></script>
 </body>
 </html>
-
-
