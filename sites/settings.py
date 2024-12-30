@@ -145,7 +145,7 @@ def loginea():
         if results:
             for row in results:
                 account_id = row[0]
-                EA = EAAuthenticator(f'{login}.ea.token', login, password)
+                EA = EAAuthenticator(f'{account_id}.ea.token', login, password)
                 games = EA.get_games()
             for game in games:
                 cursor.execute('INSERT INTO games (gameName, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?)', (game['GameName'], (game['gamePhoto']), game['playtime'], game['lastPlayed'], account_id))
