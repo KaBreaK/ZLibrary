@@ -61,7 +61,6 @@ init_db()
 def create_config():
     file_path = "static/settings.json"
     if not os.path.exists(file_path):
-        print(f"Plik {file_path} nie istnieje. Tworzę domyślny plik konfiguracyjny.")
         with open(file_path, 'w') as f:
             json.dump(default_config, f, indent=4)
     update_game_libraries()
