@@ -44,14 +44,6 @@ class EpicGamesStoreService:
     def is_connected(self):
         return self.is_authenticated()
 
-    def login_callback(self, content):
-        print("Login to EGS successful")
-        content_json = json.loads(content.decode())
-        session_id = content_json["authorizationCode"]
-
-        self.start_session(authorization_code=session_id)
-        print("Service login complete")
-
     def resume_session(self):
         self.session.headers["Authorization"] = "bearer %s" % self.session_data["access_token"]
         response = self.session.get("%s/account/api/oauth/verify" % self.oauth_url)
@@ -97,23 +89,6 @@ class EpicGamesStoreService:
             response.raise_for_status()
         response_content = response.json()
         return response_content
-    def get_game_details(self, asset):
-        namespace = asset["namespace"]
-        catalog_item_id = asset["catalogItemId"]
-        response = self.session.get(
-            "%s/catalog/api/shared/namespace/%s/bulk/items" % (self.catalog_url, namespace),
-            params={
-                "id": catalog_item_id,
-                "includeDLCDetails": True,
-                "includeMainGameDetails": True,
-                "country": "US",
-                "locale": "en",
-            },
-        )
-        response.raise_for_status()
-
-        asset.update(response.json()[catalog_item_id])
-        return asset
     def get_game_library(self):
         self.resume_session()
         response = self.session.get(
@@ -124,28 +99,22 @@ class EpicGamesStoreService:
         records = resData["records"]
         cursor = resData["responseMetadata"].get("nextCursor", None)
         while cursor:
-            response = self.session.get(
-                "%s/library/api/public/items" % self.library_url, params={"includeMetadata": "true", "cursor": cursor}
-            )
-            response.raise_for_status()
-            resData = response.json()
-            records.extend(resData["records"])
-            cursor = resData["responseMetadata"].get("nextCursor", None)
+             response = self.session.get(
+                 "%s/library/api/public/items" % self.library_url, params={"includeMetadata": "true", "cursor": cursor}
+             )
+             response.raise_for_status()
+             resData = response.json()
+             records.extend(resData["records"])
+             cursor = resData["responseMetadata"].get("nextCursor", None)
         games = []
         for record in records:
             if record["namespace"] == "ue":
                 continue
-            game_details = self.get_game_details(record)
-            games.append(game_details)
+            games.append(record)
         return games
 
     def import_games(self):
-        ggames = []
         library_data = self.get_game_library()
-        #print(self.get_game_playtime())
-        #print(games)
-        #print(self.get_game_details(games[1]))
-        #print(self.get_game_lastplayed())
         return library_data
 
     def authenticate(self):
@@ -159,67 +128,42 @@ class EpicGamesStoreService:
     def login(self, authcode):
         authorization_code = authcode
         self.start_session(authorization_code=authorization_code)
-
+    def get_images(self, ids):
+        ns_item_ids = [f"{item['namespace']}:{item['catalogItemId']}" for item in ids]
+        data = {
+            'nsItemId': ns_item_ids
+        }
+        url = "https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/namespaces/items?includeDLCDetails=false&includeMainGameDetails=false&country=US&locale=en"
+        response = self.session.post(url, data=data)
+        return response.json()
     def run(self, authcode):
         try:
             self.authenticate()
-            games = []
-            seen_sandbox_names = set()
-            gameslibrary, gamesplayime = self.import_games(), self.get_game_playtime()
-
-            artifact_to_playtime = {playtime['artifactId']: playtime['totalTime'] for playtime in gamesplayime}
-            for game in gameslibrary:
-                sandbox_name = game['sandboxName']
-
-                # Sprawdzenie, czy sandboxName jest już w zestawie
-                if sandbox_name not in seen_sandbox_names:
-                    artifact_id = game['appName']
-                    total_time = artifact_to_playtime.get(artifact_id, 0)
-
-                    # Dodanie nowego sandboxName do zestawu
-                    seen_sandbox_names.add(sandbox_name)
-
-                    # Dodanie gry do listy gier
-                    games.append({
-                        'runUrl': f'{game["namespace"]}%3A{game["catalogItemId"]}%3A{game["appName"]}',
-                        'sandboxName': game['sandboxName'],
-                        'gameimage': next(
-                            (image["url"] for image in game["keyImages"] if image["type"] == "DieselGameBoxTall"),
-                            None),
-                        'totalTime': total_time
-                    })
-            return games
-        except RuntimeError:
+        except:
             self.login(authcode)
-            games = []
-            seen_sandbox_names = set()
-            gameslibrary, gamesplayime = self.import_games(), self.get_game_playtime()
-            artifact_to_playtime = {playtime['artifactId']: playtime['totalTime'] for playtime in gamesplayime}
-            for game in gameslibrary:
-                sandbox_name = game['sandboxName']
-
-                # Sprawdzenie, czy sandboxName jest już w zestawie
-                if sandbox_name not in seen_sandbox_names:
-                    artifact_id = game['appName']
-                    total_time = artifact_to_playtime.get(artifact_id, 0)
-
-                    # Dodanie nowego sandboxName do zestawu
-                    seen_sandbox_names.add(sandbox_name)
-
-                    # Dodanie gry do listy gier
-                    games.append({
-                        'runUrl': f'{game["namespace"]}%3A{game["catalogItemId"]}%3A{game["appName"]}',
-                        'sandboxName': game['sandboxName'],
-                        'gameimage': next(
-                            (image["url"] for image in game["keyImages"] if image["type"] == "DieselGameBoxTall"),
-                            None),
-                        'totalTime': total_time
-                    })
-            return games
+        a = self.import_games()
+        b = self.get_game_playtime()
+        c = self.get_images(a)
+        total_time_dict = {}
+        for item in b:
+            total_time_dict[item['artifactId']] = item['totalTime']
+        result = []
+        for key, value in c.items():
+            if all(category['path'] != 'games' for category in value['categories']) or 'mainGameItem' in value:
+                continue
+            title = value['title']
+            runUrl = f'{value["namespace"]}%3A{value["id"]}%3A{value['releaseInfo'][0]['appId']}'
+            total_time = total_time_dict.get(value['releaseInfo'][0]['appId'], 0)
+            diesel_game_box_tall = None
+            for image in value['keyImages']:
+                if image['type'] == 'DieselGameBoxTall':
+                    diesel_game_box_tall = image['url']
+                    break
+            result.append(
+                {'runUrl': runUrl, 'sandboxName': title, 'gameimage': diesel_game_box_tall, 'totalTime': total_time})
+        return result
 
 
 if __name__ == "__main__":
     service = EpicGamesStoreService()
-    games = service.run('sss5555')
-    for game in games:
-        print(game)
+    games = service.run('7cf4a20cbf7f44bf94728c3b85cb3468')

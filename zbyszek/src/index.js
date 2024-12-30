@@ -55,6 +55,9 @@ const createWindow = () => {
   ipcMain.handle("LoginViaEpic", async () => {
     createLoginWindow("EPIC");
   });
+  ipcMain.handle("LoginViaEA", async () => {
+    createLoginWindow("EA");
+  });
   mainWindow.on("close", (event) => {
     if (!isQuitting) {
       event.preventDefault();
@@ -161,13 +164,15 @@ async function createLoginWindow(platform) {
   if (platform === "steam") {
     loginWindow.loadURL("http://localhost:8090/auth/steam");
   }
+  if (platform === "EA") {
+    loginWindow.loadURL('http://localhost:8090/auth/ea');
+  }
   if (platform === "EPIC") {
     loginWindow.loadURL(
       "https://www.epicgames.com/id/login?redirectUrl=https%3A//www.epicgames.com/id/api/redirect%3FclientId%3D34a02cf8f4414e29b15921876da36f9a%26responseType%3Dcode"
     );
     loginWindow.webContents.on("will-redirect", (event, url) => {
       if (url.startsWith("https://www.epicgames.com/id/api/")) {
-        // Przechwycenie kodu autoryzacji z odpowiedzi JSON
         loginWindow.webContents
           .executeJavaScript(
             `

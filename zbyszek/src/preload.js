@@ -9,3 +9,6 @@ contextBridge.exposeInMainWorld('electron', {
 contextBridge.exposeInMainWorld('electron', {
   loginViaEpic: () => ipcRenderer.invoke('LoginViaEpic')
 });
+contextBridge.exposeInMainWorld('electron', {
+  loginViaEpic: () => ipcRenderer.invoke('LoginViaEA')
+});

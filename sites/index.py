@@ -71,13 +71,14 @@ def get_games():
                 'maxPlayTime': game_data['playTime']
             }
 
-        if row['accountid'] not in [acc['accountid'] for acc in accounts]:
+        if row['acc_id'] not in [acc['id'] for acc in accounts]:
             account_data = {
                 'id': row['acc_id'],
                 'accountName': row['accountName'],
                 'platform': row['platform'],
                 'accountid': row['accountid']
             }
+
             accounts.append(account_data)
 
     db.commit()

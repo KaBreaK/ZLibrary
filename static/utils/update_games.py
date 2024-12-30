@@ -5,6 +5,7 @@ import json
 #from .Epic_games_library import EpicGamesStoreService
 #from .steam import get_steam_games, get_lastplayed_from_disc
 from static.utils.Epic_games_library import EpicGamesStoreService
+from static.utils.ea import EAAuthenticator
 from static.utils.steam import get_steam_games, get_lastplayed_from_disc
 
 
@@ -123,6 +124,23 @@ class EpicManager:
                 (manifest_content["AppName"],)
             )
 
+class EAManager:
+    def __init__(self, database):
+        self.db = database
+
+    def update_games(self, account_ids):
+
+        for acc_id in account_ids:
+            service = EAAuthenticator(f'{acc_id}.ea.token')
+            try:
+                games = service.get_games()
+                for game in games:
+                    self.db.execute(
+                        "INSERT INTO games (gameName, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?)",
+                        (game['GameName'], game['gamePhoto'], game['playtime'], game['lastPlayed'], acc_id)
+                    )
+            except Exception as r:
+                print(r)
 
 class GameManager:
     def __init__(self, db_path="static/glibrary.db"):
@@ -131,16 +149,19 @@ class GameManager:
     def update_games(self):
         db = self.db_manager.connect()
         db.execute('DELETE FROM games')
-        accounts = db.execute('SELECT id, accountid, platform, steamAPI FROM accounts').fetchall()
+        accounts = db.execute('SELECT id, accountName, accountid, platform, steamAPI FROM accounts').fetchall()
 
         steam_accounts = [(row['accountid'], row['steamAPI']) for row in accounts if row['platform'] == 'Steam']
         epic_accounts = [row['id'] for row in accounts if row['platform'] == 'EPIC']
+        ea_accounts = [row['id'] for row in accounts if row['platform'] == 'EA']
 
         steam_manager = SteamManager(self.db_manager)
         epic_manager = EpicManager(self.db_manager)
+        ea_manager = EAManager(self.db_manager)
 
         steam_manager.update_games(steam_accounts)
         epic_manager.update_games(epic_accounts)
+        ea_manager.update_games(ea_accounts)
 
         self.db_manager.commit()
         self.db_manager.close()
