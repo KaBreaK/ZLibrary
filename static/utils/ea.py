@@ -3,7 +3,7 @@ import re
 import json
 from urllib.parse import parse_qs, urlparse
 class EAAuthenticator:
-    def __init__(self, login=None, password=None, cookies_file="cookies.json"):
+    def __init__(self, cookies_file="cookies.json", login=None, password=None):
         self.login = login
         self.password = password
         self.cookies_file = cookies_file
@@ -177,11 +177,11 @@ class EAAuthenticator:
                 "lastPlayed": elobenc['lastPlayed']
             }
             games.append(elobenc_dict)
-        return json.dumps(games, indent=4)
+        return games
 if __name__ == "__main__":
     login = "makasko24@gmail.com"
     password = "Kalosze09"
     authenticator = EAAuthenticator(login, password)
     token = authenticator.get_games()
-    if token:
-        print(f"Access Token: {token}")
+    for game in token:
+        print(game)
