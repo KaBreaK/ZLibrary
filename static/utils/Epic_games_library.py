@@ -6,7 +6,7 @@ CACHE_DIR = os.path.expanduser("")
 
 
 class EpicGamesStoreService:
-    token_path = os.path.join(CACHE_DIR, ".egs.token")
+
     login_url = (
         "https://www.epicgames.com/id/login?redirectUrl="
         "https%3A//www.epicgames.com/id/api/redirect%3F"
@@ -25,7 +25,8 @@ class EpicGamesStoreService:
         "Chrome/84.0.4147.38 Safari/537.36"
     )
 
-    def __init__(self):
+    def __init__(self, id=None):
+        self.token_path = os.path.join(CACHE_DIR, f'{id}.egs.token')
         self.session = requests.session()
         self.session.headers["User-Agent"] = self.user_agent
         if os.path.exists(self.token_path):
@@ -52,6 +53,7 @@ class EpicGamesStoreService:
 
         response_content = response.json()
         if "errorMessage" in response_content:
+            os.remove(self.token_path)
             raise RuntimeError(response_content)
         return response_content
 

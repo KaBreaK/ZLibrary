@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, render_template_string
 from urllib import parse
 import re
-import sys
+import os
 import sqlite3
 import json
 import time
@@ -88,28 +88,30 @@ def loginegs():
     data = request.get_json()
     auth = data['authorizationCode']
     print(auth)
-    service = EpicGamesStoreService()
+    service = EpicGamesStoreService("temp")
     games = service.run(auth)
-    print(games)
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()
-    with open('.egs.token', encoding="utf-8") as token_file:
+    with open('temp.egs.token', encoding="utf-8") as token_file:
         token = json.loads(token_file.read())
     name = token.get('displayName')
     print(name)
-    cursor.execute('SELECT id FROM accounts WHERE platform = "EPIC"')
+    cursor.execute('SELECT id FROM accounts WHERE platform = "EPIC" AND accountName = ?', (name,))
     results = cursor.fetchall()
     if not results:
         cursor.execute('INSERT INTO accounts (accountName, platform) VALUES (?, ?)', (name, "EPIC"))
         time.sleep(3)
-        cursor.execute('SELECT id FROM accounts WHERE platform = "EPIC"')
+        cursor.execute('SELECT id FROM accounts WHERE platform = "EPIC" AND accountName = ?', (name,))
     results = cursor.fetchall()
     if results:
         for row in results:
             account_id = row[0]
+        token_path = f'{account_id}.egs.token'
         for game in games:
             cursor.execute('INSERT INTO games (gameName, epicRunUrl, gamePhoto, playTime, lastPlayed, account_id) VALUES (?,?,?,?,?,?)', (game['sandboxName'], game['runUrl'], (game['gameimage']), game['totalTime']/60, 0, account_id))
-
+    if os.path.exists(token_path):
+        os.remove(token_path)
+    os.rename('temp.egs.token', token_path)
     db.commit()
     db.close()
     return jsonify({'success': True})
@@ -140,7 +142,7 @@ def loginea():
         if not results:
             cursor.execute('INSERT INTO accounts (accountName, platform) VALUES (?, ?)', (login, "EA"))
             time.sleep(3)
-            cursor.execute('SELECT id FROM accounts WHERE platform = "EA"')
+            cursor.execute('SELECT id FROM accounts WHERE platform = "EA" AND accountName = ?', (login,))
             results = cursor.fetchall()
         if results:
             for row in results:

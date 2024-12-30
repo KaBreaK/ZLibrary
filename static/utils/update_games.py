@@ -93,8 +93,9 @@ class EpicManager:
         self.db = database
 
     def update_games(self, account_ids):
-        service = EpicGamesStoreService()
+
         for acc_id in account_ids:
+            service = EpicGamesStoreService(acc_id)
             try:
                 games = service.run(acc_id)
                 for game in games:
