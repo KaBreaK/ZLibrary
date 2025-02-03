@@ -1,14 +1,10 @@
 import sqlite3
-import requests
 import os
 import json
-#from .Epic_games_library import EpicGamesStoreService
-#from .steam import get_steam_games, get_lastplayed_from_disc
 from static.utils.Epic_games_library import EpicGamesStoreService
 from static.utils.ea import EAAuthenticator
-from static.utils.steam import get_steam_games, get_lastplayed_from_disc
-
-
+from static.utils.steam import SteamLibrary
+import re
 class DatabaseManager:
     def __init__(self, db_path="static/glibrary.db"):
         self.db_path = db_path
@@ -33,10 +29,10 @@ class DatabaseManager:
 class SteamManager:
     def __init__(self, database):
         self.db = database
-
+        self.steamService = SteamLibrary()
     def update_games(self, accounts):
         for account_id, api_key in accounts:
-            games = get_steam_games(account_id, api_key)
+            games = self.steamService.get_steam_games(account_id, api_key)
             for game in games:
                 if 'Test' in game['name']:
                     continue
@@ -57,7 +53,7 @@ class SteamManager:
             )
         else:
             try:
-                filestime = get_lastplayed_from_disc((acc_id, game['appid']))
+                filestime = self.steamService.get_last_played_from_disk(acc_id, game['appid'])
                 last_played = next((item for item in filestime if item['gameid'] == game['appid']), None)
                 self.db.execute(
                     "INSERT INTO games (gameName, steamid, gamePhoto, playTime, lastPlayed, account_id) VALUES  (?,?,?,?,?,?)",
@@ -72,19 +68,21 @@ class SteamManager:
                 )
 
     def update_installed_games(self):
-        with open("static/settings.json", 'r') as f:
+        with open("static/locations.json", 'r') as f:
             config = json.load(f)
-            libaryPaths = config['gameLibraries']
+            steampath = config['steampath']
+            manifestpath = os.path.join(steampath, "config", "libraryfolders.vdf")
         self.db.execute("UPDATE games SET installed  = 0 WHERE account_id IN (SELECT id FROM Accounts WHERE platform = 'Steam')")
-
-        installedGames = []
-        for path in libaryPaths:
-            try:
-                installedGames = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
-            except Exception as r:
-                print(r)
-        for game in installedGames:
-            self.db.execute("UPDATE games SET installed = 1 WHERE GameName = ?", (game,))
+        app_ids = set()
+        with open(manifestpath, 'r', encoding='UTF-8') as file:
+            f = file.read()
+        pattern = r'"apps"\s*{\s*([^}]*)\s*}'
+        matches = re.findall(pattern, f)
+        for match in matches:
+            ids = re.findall(r'"(\d+)"', match)
+            app_ids.update(ids)
+        for game in app_ids:
+            self.db.execute("UPDATE games SET installed = 1 WHERE steamid = ?", (game,))
 
 
 
@@ -108,21 +106,24 @@ class EpicManager:
 
 
     def update_installed_games(self):
-        manifests_path = "C:\\ProgramData\\Epic\\EpicGamesLauncher\\Data\\Manifests"
-        if not os.path.exists(manifests_path):
-            print("No valid path for EGS games manifests in %s", manifests_path)
+        with open("static/locations.json", 'r') as f:
+            config = json.load(f)
+            steampath = config['epicpath']
+            manifestpath = os.path.join(steampath, "Data", "Manifests")
+        if not os.path.exists(manifestpath):
+            print("No valid path for EGS games manifests in %s", manifestpath)
             return
 
-        for manifest in os.listdir(manifests_path):
+        for manifest in os.listdir(manifestpath):
             if not manifest.endswith(".item"):
                 continue
-            with open(os.path.join(manifests_path, manifest), encoding="utf-8") as manifest_file:
+            with open(os.path.join(manifestpath, manifest), encoding="utf-8") as manifest_file:
                 manifest_content = json.loads(manifest_file.read())
             if manifest_content["MainGameAppName"] != manifest_content["AppName"]:
                 continue
             self.db.execute(
                 "UPDATE games SET installed = 1 WHERE GameName = ?",
-                (manifest_content["AppName"],)
+                (manifest_content["DisplayName"],)
             )
 
 class EAManager:
@@ -186,3 +187,4 @@ if __name__ == '__main__':
     manager = GameManager("static/glibrary.db")
     manager.update_games()
     manager.update_installed_games()
+

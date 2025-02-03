@@ -2,7 +2,6 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Wyeksponowanie funkcji `LoginViaSteam` do renderera
 contextBridge.exposeInMainWorld('electron', {
   loginViaSteam: () => ipcRenderer.invoke('LoginViaSteam')
 });
@@ -11,4 +10,13 @@ contextBridge.exposeInMainWorld('electron', {
 });
 contextBridge.exposeInMainWorld('electron', {
   loginViaEpic: () => ipcRenderer.invoke('LoginViaEA')
+});
+contextBridge.exposeInMainWorld('electron', {
+  close: () => ipcRenderer.invoke('close')
+});
+contextBridge.exposeInMainWorld('electron', {
+  minimize: () => ipcRenderer.invoke('minimize')
+});
+contextBridge.exposeInMainWorld('launch', {
+  launch: (platform, appid) => ipcRenderer.invoke('launch', platform, appid)
 });

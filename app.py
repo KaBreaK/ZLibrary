@@ -1,21 +1,23 @@
-from idlelib.outwin import file_line_pats
-import json
-from flask import Flask, render_template, send_from_directory
-from flask_cors import CORS
+from fastapi import FastAPI, BackgroundTasks
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from sites.index import index_router
+from sites.settings import settings_router
 import sqlite3
 import os
-from sites.index import index_bp
-from sites.settings import settings_bp
+import json
 
-app = Flask(__name__, static_folder='dist', template_folder='dist')
-app.secret_key = 'CHUJ'
-CORS(app)
 
-default_config = {
-    "steamPath": "C:\\Program Files (x86)\\Steam\\",
-    "gameLibraries": [],
-    "theme": "dark"
-}
+app = FastAPI()
+app.include_router(index_router)
+app.include_router(settings_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def init_db():
     db = sqlite3.connect("static/glibrary.db")
@@ -56,72 +58,28 @@ def init_db():
 
     db.commit()
     db.close()
+def init_json():
+    # Sprawdź, czy plik już istnieje
+    if os.path.exists("static/locations.json"):
+        return
 
+    # Definiowanie ścieżek do bibliotek
+    library_paths = {
+        "steampath": "C:/Program Files (x86)/Steam",
+        "epicpath": "C:/ProgramData/Epic/EpicGamesLauncher",
+        "eapath": "C:/Program Files (x86)/Origin Games"
+    }
+
+    # Zapisanie do pliku JSON
+    with open("static/locations.json", 'w') as f:
+        json.dump(library_paths, f, indent=4)
 init_db()
-def create_config():
-    file_path = "static/settings.json"
-    if not os.path.exists(file_path):
-        with open(file_path, 'w') as f:
-            json.dump(default_config, f, indent=4)
-    update_game_libraries()
-
-
-def update_game_libraries():
-    file_path = "static/settings.json"
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            config = json.load(f)
-
-        steam_path = config.get("steamPath", "")
-        if not steam_path:
-            print("Brak ścieżki Steam w pliku konfiguracyjnym.")
-            return
-
-        vdf_path = os.path.join(steam_path, "steamapps", "libraryfolders.vdf")
-
-        if os.path.exists(vdf_path):
-            with open(vdf_path, 'r') as vdf_file:
-                vdf_content = vdf_file.read()
-
-            library_paths = []
-            start_idx = vdf_content.find('"path"')
-            while start_idx != -1:
-                start_idx = vdf_content.find('"path"', start_idx)
-                if start_idx == -1:
-                    break
-                start_idx = vdf_content.find('"', start_idx + 7)
-                if start_idx == -1:
-                    print(f"Brak cudzysłowu na końcu path w pliku: {vdf_path}")
-                    break
-                end_idx = vdf_content.find('"', start_idx + 1)
-                if end_idx == -1:
-                    print(f"Nie znaleziono końca ścieżki dla path w pliku: {vdf_path}")
-                    break
-                path = vdf_content[start_idx + 1:end_idx]
-                library_paths.append(path)
-                start_idx = end_idx
-
-            for path in library_paths:
-                new_path = os.path.join(path, "steamapps", "common")
-                new_path = os.path.normpath(new_path)  # Normalize the path to prevent extra backslashes
-                if new_path not in config["gameLibraries"]:
-                    config["gameLibraries"].append(new_path)
-
-            with open(file_path, 'w') as f:
-                json.dump(config, f, indent=4)
-
-            print("dziala")
-        else:
-            print(f"Nie znaleziono pliku {vdf_path}.")
-    else:
-        print(f"Plik konfiguracyjny {file_path} nie istnieje.")
-app.register_blueprint(index_bp)
-app.register_blueprint(settings_bp)
-@app.route('/shutdown', methods=['POST'])
-def shutdown():
-    os._exit(0)
-    return 'Server shutting down...'
+init_json()
+@app.post("/shutdown")
+async def shutdown(background_tasks: BackgroundTasks):
+    background_tasks.add_task(os._exit, 0)
+    return {"message": "Server shutting down..."}
 
 if __name__ == '__main__':
-    create_config()
-    app.run(debug=True, port=8090)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8090)

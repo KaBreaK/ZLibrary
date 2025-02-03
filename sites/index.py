@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify
+from fastapi import APIRouter, HTTPException, Request
 import sqlite3
 from static.utils.update_games import update_games
-from static.utils.steam import get_steam_ids
-import asyncio
-index_bp = Blueprint('index_bp', __name__)
+import json
+index_router = APIRouter()
+
 def get_accounts():
     db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
@@ -20,22 +20,23 @@ def get_accounts():
             'id': row['id'],
             'accountName': row['accountName'],
             'platform': row['platform'],
-           'steamAPI': row['steamAPI'],
+            'steamAPI': row['steamAPI'],
             'accountid': row['accountid']
         })
 
     return accounts
-def get_games():
+
+def get_games(b):
     db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
     cursor = db.cursor()
-
-    cursor.execute("""
+    cursor.execute(f"""
         SELECT games.*, accounts.id AS acc_id, accounts.accountName, accounts.platform, accounts.steamAPI, accounts.accountid,
                gamespec.fav, gamespec.completed
         FROM games
         LEFT JOIN accounts ON games.account_id = accounts.id
         LEFT JOIN gamespec ON games.GameName = gamespec.game_name
+        {"WHERE games.installed = 1" if b else ""}
     """)
 
     rows = cursor.fetchall()
@@ -107,34 +108,40 @@ def get_games():
 
     return games, accounts
 
-@index_bp.route("/api/accounts", methods=["GET"])
+@index_router.get("/api/accounts")
 def accounts():
     accounts = get_accounts()
-    return jsonify(accounts)
-@index_bp.route("/api/games", methods=["GET"])
-def index():
-    games, accounts = get_games()
-    return jsonify({"games": games, "accounts": accounts})
-@index_bp.route('/api/status')
-def api_test():
+    return {"accounts": accounts}
 
+@index_router.get("/api/games")
+def index():
+    games, accounts = get_games(False)
+    return {"games": games, "accounts": accounts}
+@index_router.get("/api/installed")
+def installed():
+    games, accounts = get_games(True)
+    return {"games": games, "accounts": accounts}
+@index_router.get('/api/status')
+def api_test():
     return {
-    "status": "running",
-    "message": "Server is operational"
-}
-@index_bp.route('/api/sync')
+        "status": "running",
+        "message": "Server is operational"
+    }
+
+@index_router.get('/api/sync')
 def sync_games():
     update_games()
-    return "abc"
-@index_bp.route('/api/start', methods=['GET'])
-def onstart():
-    get_steam_ids()
-    return "abc"
-@index_bp.route('/api/fav', methods=['POST'])
-def updategamespec():
+    return {"message": "Games synced"}
+@index_router.get('/api/path')
+def steampath():
+    with open("static/locations.json", 'r') as f:
+        config = json.load(f)
+    return config
+@index_router.post('/api/fav')
+async def updategamespec(request: Request):
     db = sqlite3.connect("static/glibrary.db")
     cursor = db.cursor()
-    data = request.get_json()
+    data = await request.json()
     game_name = data.get('game_name')
     cursor.execute("SELECT fav FROM gamespec WHERE game_name = ?", (game_name,))
     result = cursor.fetchone()
@@ -147,4 +154,4 @@ def updategamespec():
         cursor.execute("UPDATE gamespec SET fav = ? WHERE game_name = ?", (new_fav, game_name))
     db.commit()
     db.close()
-    return jsonify({'message': 'Database updated successfully'})
+    return {"message": "Database updated successfully"}

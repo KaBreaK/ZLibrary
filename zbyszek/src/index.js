@@ -3,6 +3,7 @@ const {
   BrowserWindow,
   screen,
   Tray,
+    shell,
   Menu,
   ipcMain,
   dialog,
@@ -20,32 +21,23 @@ let flaskProcess;
 let mainWindow;
 let tray;
 let isQuitting = false;
-async function startFlaskServer() {
-  flaskProcess = spawn("python", ["app.py"], {
-    cwd: "../",
-    stdio: "inherit",
-  });
-  flaskProcess.on("error", (error) => {
-    console.error(`Failed to start Flask process: ${error.message}`);
-  });
-}
 const createWindow = () => {
-  startFlaskServer();
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    width: Math.floor(width * 0.7),
-    height: Math.floor(height * 0.7),
+    width: Math.floor(width * 0.75),
+    height: Math.floor(height * 0.75),
     y: Math.floor((height - Math.floor(height * 0.7)) / 2) + 0,
     resizable: false,
     transparent: true,
     frame: false,
+    icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  console.log(Math.floor((height - Math.floor(height * 0.7)) / 2) + 150)
+  fetch('http://localhost:8090/find')
   ipcMain.handle("addpath", async () => {
     createLoginWindow("addpath");
   });
@@ -57,6 +49,15 @@ const createWindow = () => {
   });
   ipcMain.handle("LoginViaEA", async () => {
     createLoginWindow("EA");
+  });
+  ipcMain.handle("close", async () => {
+    mainWindow.hide();
+  });
+  ipcMain.handle("minimize", async () => {
+    mainWindow.minimize();
+  });
+  ipcMain.handle("launch", async (_, platform, app) => {
+    launchgames(platform, app)
   });
   mainWindow.on("close", (event) => {
     if (!isQuitting) {
@@ -71,6 +72,39 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 };
+async function launchgames(platform, app) {
+  if (platform == "Steam") {
+    try {
+      const response = await fetch('http://localhost:8090/api/path');
+      const data = await response.json();
+      const steampath = data.steampath;
+      const execAsync = (command) => {
+        return new Promise((resolve, reject) => {
+          exec(command, (error, stdout, stderr) => {
+            if (error) {
+              reject(`Błąd: ${error.message}`);
+              return;
+            }
+            if (stderr) {
+              reject(`Stderr: ${stderr}`);
+              return;
+            }
+            resolve(stdout);
+          });
+        });
+      };
+      console.log("Zamykanie Steam...");
+      await execAsync(`"${steampath}\\steam.exe" -silent -applaunch ${app}`);
+    } catch (err) {
+      console.error("Błąd:", err);
+    }
+  }else if (platform == "EPIC"){
+    shell.openExternal(`com.epicgames.launcher://apps/${app}?action=launch&silent=true`);
+  }
+  else if(platform == "EA"){
+    console.log("EA")
+  }
+}
 function createTrayIcon() {
   tray = new Tray("src/icon.png");
   const contextMenu = Menu.buildFromTemplate([
@@ -84,9 +118,7 @@ function createTrayIcon() {
         } catch (error) {
           console.error(`zerwano polaczenie `);
         }
-        if (flaskProcess) {
-          flaskProcess.kill();
-        }
+        fetch("http://localhost:8090/shutdown")
         app.quit();
       },
     },
@@ -100,9 +132,7 @@ function createTrayIcon() {
 }
 app.on("before-quit", () => {
   isQuitting = true;
-  if (flaskProcess) {
-    flaskProcess.kill();
-  }
+  fetch("http://localhost:8090/shutdown")
 });
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -172,7 +202,7 @@ async function createLoginWindow(platform) {
       "https://www.epicgames.com/id/login?redirectUrl=https%3A//www.epicgames.com/id/api/redirect%3FclientId%3D34a02cf8f4414e29b15921876da36f9a%26responseType%3Dcode"
     );
     loginWindow.webContents.on("will-redirect", (event, url) => {
-      if (url.startsWith("https://www.epicgames.com/id/api/")) {
+      if (url.startsWith("https://www.epicgames.com/id/api/redirect?clientId")) {
         loginWindow.webContents
           .executeJavaScript(
             `
@@ -185,7 +215,7 @@ async function createLoginWindow(platform) {
           )
           .then((authorizationCode) => {
             console.log("Authorization Code: ", authorizationCode);
-            fetch("http://localhost:8090/auth/egs", {
+            fetch("http://localhost:8090/auth/epic", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

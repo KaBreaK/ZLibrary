@@ -1,49 +1,60 @@
+<!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteka</title>
+    <title>Biblioteka Gier</title>
+    <link rel="stylesheet" href="../css/layout.css">
     <link rel="stylesheet" href="../css/index.css">
 </head>
+
 <body>
-    <div class="header">
-        <div class="search-bar">
-            <input type="text" placeholder="Wyszukaj gry...">
-        </div>
-        <div class="window-controls">
-            <span class="minimize">-</span>
-            <span class="maximize">□</span>
-            <span class="close">X</span>
-        </div>
-    </div>
-
-    <div class="sidebar">
-        <img src="../images/logo.png" alt="logo" class="logo">
-        <h2>Biblioteka</h2>
-        <ul>
-            <li><a href="index.html">All Games</a></li>
-            <li><a href="not_installed.html">Installed</a></li>
-            <li><a href="installed.html">Not Installed</a></li>
-            <li><a href="settings.html">Settings</a></li>
-        </ul>
-    </div>
-
-    <main class="library">
-        <h1>Twoje Gry</h1>
-        <div class="games-container">
-            <!-- Gry wygenerowane przez API -->
-            <div class="game-card">
-                <img src="../images/game1.jpg" alt="Gra 1">
-                <h3>Nazwa Gry</h3>
-                <p>Czas gry: 25h</p>
+    <section class="main-app">
+        <section class="sidebar">
+            <a href="index.html"><img src="../images/logo.png" class="logo"></a>
+            <button id="library"><img src="../images/library.png"></img>Library</button>
+            <button id="installed"><img src="../images/download.png">Installed</button>
+            <div class="bottom">
+                <button id="settings"><img src="../images/settings.png"></button>
+                <button onclick="sync()"><img src="../images/update.png"></button>
+                <button id="info"><img src="../images/information.png"></button>
             </div>
-            <div class="game-card">
-                <img src="../images/game2.jpg" alt="Gra 2">
-                <h3>Nazwa Gry</h3>
-                <p>Czas gry: 40h</p>
-            </div>
-            <!-- Więcej gier -->
+        </section>
+        <div class="wrapper">
+            <section class="menu">
+                <img id="close" src="../images/close.png" width="2%">
+                <img id="minimize" src="../images/minimize.png" width="2%">
+            </section>
+            <section class="content">
+                <header>
+                    <div class="searchbar">
+    <button id="search-icon">
+        <img src="../images/search.png" alt="Search" id="search-icon-img">
+    </button>
+    <input type="text" id="search-input" placeholder="Search...">
+    <button id="clear-icon" style="display: none;">
+        <img src="../images/close.png" alt="Clear" id="clear">
+    </button>
+</div>
+                    <img src="../images/filter.png" id="sortTrigger">
+                    <div id="sortModal" style="display:none; position: fixed; top: 35%; left: 80%; transform: translate(-50%, -50%); background: #2C2C2C; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
+    <div class="sort-option" data-sort="1">Alfabetical od A do Z</div>
+    <div class="sort-option" data-sort="3">Time PLayed</div>
+    <div class="sort-option" data-sort="5">Last PLayed</div>
+</div>
+                    </header>
+                    <div id="accountchooser" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2C2C2C; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
+
+                    </div>
+                <div id="games">
+
+                </div>
+            </section>
         </div>
-    </main>
+    </section>
 </body>
+<script src="../scripts/layout.js"></script>
+<script src="../scripts/index.js"></script>
+
 </html>

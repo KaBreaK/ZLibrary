@@ -3,49 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ustawienia Kont</title>
+    <title>Biblioteka Gier</title>
+    <link rel="stylesheet" href="../css/layout.css">
     <link rel="stylesheet" href="../css/settings.css">
 </head>
 <body>
-<div class="sidebar">
-        <img src="../images/logo.png" alt="logo" id="logo" width="80%"/>
-        <h2>Biblioteka</h2>
-        <ul>
-            <li><a href="index.html">All Games</a></li>
-            <li><a href="not_installed.html">Installed</a></li>
-            <li><a href="installed.html">Not Installed</a></li>
-            <li><a href="settings.html">Settings</a></li>
-        </ul>
+<section class="main-app">
+    <section class="sidebar">
+        <a href="index.html"><img src="../images/logo.png" class="logo"></a>
+        <button id="library"><img src="../images/library.png"></img>Library</button>
+        <button id="installed"><img src="../images/download.png">Installed</button>
+        <div class="bottom">
+        <button id="settings"><img src="../images/settings.png"></button>
+        <button onclick="sync()"><img src="../images/update.png"></button>
+        <button id="info"><img src="../images/information.png"></button>
+        </div>
+    </section>
+    <div class="wrapper">
+    <section class="menu">
+        <img id="close" src="../images/close.png" width="2%">
+        <img id="minimize" src="../images/minimize.png" width="2%">
+    </section>
+    <section class="content">
+<div class="accounts-container">
+        <div>
+            <h2>Steam Accounts</h2>
+            <ul id="steam-accounts"></ul>
+            <div class="loginbtn" onclick="LoginViaSteam()">Add account</div>
+        </div>
+        <div>
+            <h2>Epic Games Accounts</h2>
+            <ul id="epic-accounts"></ul>
+            <div class="loginbtn" onclick="LoginViaEpic()">Add account</div>
+        </div>
+        <div>
+            <h2>EA Accounts</h2>
+            <ul id="ea-accounts"></ul>
+            <div class="loginbtn" onclick="LoginViaEA()">Add account</div>
+        </div>
     </div>
-    <header>
-        <h1>Ustawienia Kont</h1>
-    </header>
-<div id="overview"></div>
-    <main>
-        <section class="account-list">
-            <div class="account-section">
-                <h2>Steam</h2>
-                <ul id="steam-accounts">
-                    <!-- Lista kont Steam -->
-                </ul>
-                <button class="add-account" onclick="LoginViaSteam()">Dodaj konto Steam</button>
-            </div>
-            <div class="account-section">
-                <h2>Epic</h2>
-                <ul id="epic-accounts">
-                    <!-- Lista kont Epic -->
-                </ul>
-                <button class="add-account" onclick="LoginViaEpic()">Dodaj konto Epic</button>
-            </div>
-            <div class="account-section">
-                <h2>EA</h2>
-                <ul id="ea-accounts">
-                    <!-- Lista kont EA -->
-                </ul>
-                <button class="add-account" onclick="LoginViaEA()">Dodaj konto EA</button>
-            </div>
-        </section>
-    </main>
-    <script src="../scripts/settings.js"></script>
+    <div id="saved-entries" style="padding: 20px; border-top: 1px solid #444;"></div>
+    </section>
+        <div class="">
+            <button onclick="findids()">znajdz konta steam</button>
+        </div>
+    </div>
+</section>
 </body>
+<script src="../scripts/layout.js"></script>
+<script src="../scripts/settings.js"></script>
 </html>
