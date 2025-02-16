@@ -37,7 +37,6 @@ const createWindow = () => {
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  fetch('http://localhost:8090/find')
   ipcMain.handle("addpath", async () => {
     createLoginWindow("addpath");
   });
@@ -56,15 +55,29 @@ const createWindow = () => {
   ipcMain.handle("minimize", async () => {
     mainWindow.minimize();
   });
-  ipcMain.handle("launch", async (_, platform, app) => {
-    launchgames(platform, app)
-  });
-  mainWindow.on("close", (event) => {
-    if (!isQuitting) {
-      event.preventDefault();
-      mainWindow.hide();
+  ipcMain.handle('addsteampath', async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory']
+    });
+    if (result.canceled) {
+        return { message: "Operation cancelled" };
     }
-  });
+    const newPath = result.filePaths[0];
+    console.log("Selected path:", newPath);
+    try {
+        const response = await fetch("http://localhost:8090/api/path/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ new_path: newPath })
+        });
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+        return { error: error.message };
+    }
+});
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "sites/index.html"));
@@ -72,39 +85,6 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 };
-async function launchgames(platform, app) {
-  if (platform == "Steam") {
-    try {
-      const response = await fetch('http://localhost:8090/api/path');
-      const data = await response.json();
-      const steampath = data.steampath;
-      const execAsync = (command) => {
-        return new Promise((resolve, reject) => {
-          exec(command, (error, stdout, stderr) => {
-            if (error) {
-              reject(`Błąd: ${error.message}`);
-              return;
-            }
-            if (stderr) {
-              reject(`Stderr: ${stderr}`);
-              return;
-            }
-            resolve(stdout);
-          });
-        });
-      };
-      console.log("Zamykanie Steam...");
-      await execAsync(`"${steampath}\\steam.exe" -silent -applaunch ${app}`);
-    } catch (err) {
-      console.error("Błąd:", err);
-    }
-  }else if (platform == "EPIC"){
-    shell.openExternal(`com.epicgames.launcher://apps/${app}?action=launch&silent=true`);
-  }
-  else if(platform == "EA"){
-    console.log("EA")
-  }
-}
 function createTrayIcon() {
   tray = new Tray("src/icon.png");
   const contextMenu = Menu.buildFromTemplate([

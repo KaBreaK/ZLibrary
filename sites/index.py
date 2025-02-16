@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 import sqlite3
 from static.utils.update_games import update_games
+from static.utils.start_game import SteamRun
 import json
 index_router = APIRouter()
 
@@ -67,7 +68,8 @@ def get_games(b):
             games_dict[game_name]['playTimePerAccount'].append({
                 'accountName': game_data['accountName'],
                 'platform': game_data['platform'],
-                'playTime': game_data['playTime']
+                'playTime': game_data['playTime'],
+                'accountId': game_data['accountid']
             })
             if game_data['playTime'] > games_dict[game_name]['maxPlayTime']:
                 games_dict[game_name]['maxPlayTime'] = game_data['playTime']
@@ -86,7 +88,8 @@ def get_games(b):
                 'playTimePerAccount': [{
                     'accountName': game_data['accountName'],
                     'platform': game_data['platform'],
-                    'playTime': game_data['playTime']
+                    'playTime': game_data['playTime'],
+                    'accountId': game_data['accountid']
                 }],
                 'maxPlayTime': game_data['playTime']
             }
@@ -109,16 +112,16 @@ def get_games(b):
     return games, accounts
 
 @index_router.get("/api/accounts")
-def accounts():
+async def accounts():
     accounts = get_accounts()
     return {"accounts": accounts}
 
 @index_router.get("/api/games")
-def index():
+async def index():
     games, accounts = get_games(False)
     return {"games": games, "accounts": accounts}
 @index_router.get("/api/installed")
-def installed():
+async def installed():
     games, accounts = get_games(True)
     return {"games": games, "accounts": accounts}
 @index_router.get('/api/status')
@@ -129,14 +132,30 @@ def api_test():
     }
 
 @index_router.get('/api/sync')
-def sync_games():
+async def sync_games():
     update_games()
     return {"message": "Games synced"}
 @index_router.get('/api/path')
-def steampath():
+async def steampath():
     with open("static/locations.json", 'r') as f:
         config = json.load(f)
     return config
+
+@index_router.post("/api/path/update")
+async def update_steampath(request: Request):
+    # try:
+        data = await request.json()
+        with open("static/locations.json", 'r') as f:
+            config = json.load(f)
+        new_path = data.get('new_path')
+        config["steampath"] = new_path
+
+        with open("static/locations.json", 'w') as f:
+            json.dump(config, f, indent=4)
+
+        return {"message": "Steam path updated successfully", "new_path": new_path}
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 @index_router.post('/api/fav')
 async def updategamespec(request: Request):
     db = sqlite3.connect("static/glibrary.db")
@@ -155,3 +174,9 @@ async def updategamespec(request: Request):
     db.commit()
     db.close()
     return {"message": "Database updated successfully"}
+
+@index_router.get('/api/run/steam')
+async def runsteam(steamid: str, appid: str | None=None):
+    manager = SteamRun()
+    manager.run(steamid=steamid, appid=appid)
+    return {"message": "Game started"}

@@ -10,6 +10,7 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel
 
+from sites.index import sync_games
 from static.utils.steam import SteamLibrary
 from static.utils.Epic_games_library import EpicGamesStoreService
 from static.utils.update_games import update_games
@@ -155,3 +156,34 @@ async def login_epic(request: Request):
         db.close()
 
     return {"success": True, "account_id": account_id}
+
+
+@settings_router.get("/logout/{account_id}")
+async def logout(account_id: int, request: Request):
+    db = sqlite3.connect("static/glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+
+    cursor.execute("DELETE FROM accounts WHERE id = ?", (account_id,))
+    db.commit()
+
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    db.close()
+    sync_games()
+    return {"message": "Account deleted successfully"}
+
+
+@settings_router.get("/api/save/{accountid}/{apikey}")
+async def save_api(accountid: int, apikey: str, request: Request):
+    db = sqlite3.connect("static/glibrary.db")
+    db.row_factory = sqlite3.Row
+    cursor = db.cursor()
+    cursor.execute("UPDATE accounts SET steamAPI = ? WHERE id = ?", (apikey, accountid))
+    db.commit()
+    message = f"API key for account {accountid} updated successfully."
+    db.close()
+
+    return {"message": message}
+#TODO: dodac jeabne ea w pizde

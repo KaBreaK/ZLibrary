@@ -8,15 +8,6 @@ async function LoginViaSteam() {
     GetAccount();
 }
 
-async function addpath() {
-    try {
-        await ipcRenderer.invoke('addpath');
-        console.log("JESTEM");
-    } catch (error) {
-        console.error('Błąd podczas logowania przez Steam:', error);
-    }
-}
-
 async function LoginViaEpic() {
     try {
         await ipcRenderer.invoke('LoginViaEpic');
@@ -97,7 +88,11 @@ function GetAccount() {
                 if (account.platform === 'Steam') {
                     const input = document.createElement('input');
                     input.className = 'account-input';
-                    input.placeholder = 'Enter API Key';
+                    if (account.steamAPI != null){
+                        input.value = account.steamAPI;
+                    }else {
+                        input.placeholder = 'Enter API Key';
+                    }
                     input.style.flex = '1';
                     input.style.padding = '5px';
 
@@ -107,9 +102,10 @@ function GetAccount() {
                     saveButton.style.marginLeft = '10px';
 
                     saveButton.onclick = () => {
-                        const entry = document.createElement('div');
-                        entry.textContent = `Account ID: ${account.accountid}, Input: ${input.value}`;
-                        savedEntries.appendChild(entry);
+                        fetch(`http://localhost:8090/api/save/${account.id}/${input.value}`)
+                        .then(response => response.json())
+                        .then(data => console.log(data))
+                        .catch(error => console.error('Error:', error));
                     };
 
                     const logoutButton = document.createElement('button');
@@ -118,10 +114,20 @@ function GetAccount() {
                     logoutButton.style.marginLeft = '10px';
 
                     logoutButton.onclick = () => logoutAccount(account.id, li);
+                    const LogIn = document.createElement('button');
+                    LogIn.textContent = 'Log In';
+                    LogIn.className = 'save-btn';
+                    LogIn.style.marginLeft = '10px';
+
+                    LogIn.onclick = async () =>{
+                        console.log(account.accountid)
+                        const response = await fetch(`http://localhost:8090/api/run/steam/?steamid=${account.accountid}`)
+                    };
 
                     li.appendChild(input);
                     li.appendChild(saveButton);
                     li.appendChild(logoutButton);
+                    li.appendChild(LogIn);
                 } else {
                     const logoutButton = document.createElement('button');
                     logoutButton.textContent = 'Logout';
@@ -150,7 +156,7 @@ function GetAccount() {
 
 
 function logoutAccount(accountId, liElement) {
-    fetch(`http://localhost:8090/api/logout?id=${accountId}`, { method: 'GET' })
+    fetch(`http://localhost:8090/logout/${accountId}`, { method: 'GET' })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);

@@ -4,7 +4,7 @@ import requests
 
 CACHE_DIR = os.path.expanduser("")
 
-
+#TODO: zrobic to bardziej czytalne
 class EpicGamesStoreService:
 
     login_url = (
@@ -24,7 +24,7 @@ class EpicGamesStoreService:
         "UnrealEngine/4.23.0-14907503+++Portal+Release-Live "
         "Chrome/84.0.4147.38 Safari/537.36"
     )
-
+    #TODO: wyjebac ta jebana sciezka z inita
     def __init__(self, id=None):
         self.token_path = os.path.join(CACHE_DIR, f'{id}.egs.token')
         self.session = requests.session()

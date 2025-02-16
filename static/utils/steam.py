@@ -1,4 +1,6 @@
 import sqlite3
+from sys import exception
+
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -8,7 +10,6 @@ import os
 
 class SteamLibrary:
     def __init__(self):
-        self.steam_api_key = '5D2C684722E3A769185AB7B84EA7A1EB'
         self.steam_path = self.get_steam_path()
         self.db = sqlite3.connect("static/glibrary.db")
         self.db.row_factory = sqlite3.Row
@@ -42,30 +43,26 @@ class SteamLibrary:
         for app_id, last_played in matches:
             tab.append({'gameid': int(app_id), 'lastplayed': last_played})
         return tab
-
+#TODO: zajebac bardziej uniwersalny sposob zeby to dzialalo
     def without_api(self, steam_id):
-        games = []
-        session = requests.Session()
-        steam_profile_url = f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'
-        cookies = {'steamRefresh_steam': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInN0ZWFtIiwgInN1YiI6ICI3NjU2MTE5OTgwNzA4ODI1NiIsICJhdWQiOiBbICJ3ZWIiLCAicmVuZXciLCAiZGVyaXZlIiBdLCAiZXhwIjogMTc1NjIwMTk3OCwgIm5iZiI6IDE3Mjk3MjI4ODYsICJpYXQiOiAxNzM4MzYyODg2LCAianRpIjogIjAwMEZfMjVDMzBCODRfNzFCNDAiLCAib2F0IjogMTczODM2Mjg4NiwgInBlciI6IDEsICJpcF9zdWJqZWN0IjogIjc5LjE4NC4xOTQuOTIiLCAiaXBfY29uZmlybWVyIjogIjc5LjE4NC4xOTQuOTIiIH0.nLvfpoBkdlSbOnYO7DcFdQC0fWc4eeCOLj2ODc1ZWAvblMemMzGJPel4JJWpcRsuik4isZXkvRbOyS7jEUjKDA"}
-        session.cookies.update(cookies)
-        response = session.get(steam_profile_url)
-        if response.status_code == 200:
-            data = {"redir": f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'}
-            response = session.post("https://login.steampowered.com/jwt/ajaxrefresh", data=data)
-            data = {"auth": response.json()['auth'],
-                    "nonce": response.json()['nonce'],
-                    "redir": response.json()['redir'],
-                    "steamID": response.json()['steamID']
-                    }
-            response = session.post("https://steamcommunity.com/login/settoken", data=data)
+        try:
+            games = []
+            session = requests.Session()
+            steam_profile_url = f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'
+            cookies = {
+                'steamLoginSecure': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwRF8yNUQ2RUQ2NV80QzcwQyIsICJzdWIiOiAiNzY1NjExOTk4MDcwODgyNTYiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3Mzk4MTU1OTEsICJuYmYiOiAxNzMxMDg3OTQ4LCAiaWF0IjogMTczOTcyNzk0OCwgImp0aSI6ICIwMDA0XzI1RDZFRDY1XzU4NkMyIiwgIm9hdCI6IDE3Mzk3Mjc1MzksICJydF9leHAiOiAxNzU3NjQ4NTU5LCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiODMuMzEuMTQuMTExIiwgImlwX2NvbmZpcm1lciI6ICI4My4zMS4xNC4xMTEiIH0.Tjc7Vi6_R_sXWk_IoVYz5g9jFdo1S6JBF2tefzlJ3tPl3b8M6hXsYBEq3lRFeegtF6aMlgxnBP-mqV1UlnizDA"}
+            session.cookies.update(cookies)
             response = session.get(steam_profile_url)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            data_json = soup.find('template', {'data-profile-gameslist': True})['data-profile-gameslist']
-            data = json.loads(data_json.replace('&quot;', '"'))
-            dupa = data.get('rgGames', [])
-            return dupa
-        return []
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                data_json = soup.find('template', {'data-profile-gameslist': True})['data-profile-gameslist']
+                data = json.loads(data_json.replace('&quot;', '"'))
+                dupa = data.get('rgGames', [])
+                return dupa
+            return []
+        except Exception as e:
+            print("chujnia z grzybem")
+            return []
 
     def get_steam_games(self, steam_id, steam_api):
         api = self.load_steam_api(steam_id)

@@ -1,5 +1,6 @@
 .searchbar {
     display: flex;
+    justify-content: space-between;  /* This will space out the elements */
     background: #333333;
     border-radius: 8px;
     padding: 1%;
@@ -7,23 +8,7 @@
     margin: 1%;
     max-width: 600px;
 }
-header{
-    width: 100%;
-    overflow: hidden;
-    margin-top: 5%;
-    justify-content: center;
-    display: flex;
-    height: 10%;
-}
-.content{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    padding: 10px;
-}
-#sortTrigger{
-    padding: 1%;
-}
+
 .searchbar input {
     width: 100%;
     padding: 1%;
@@ -44,11 +29,26 @@ header{
     cursor: pointer;
     margin-left: 8px;
 }
+
 .searchbar button img {
     height: 90%;
-        width: auto;
+    width: auto;
     -webkit-user-drag: none;
+}
 
+.game-count {
+    color: #AAAAAA;
+    font-size: 1.2em;
+    padding-left: 10px;
+    align-self: center;
+}
+header{
+    width: 100%;
+    overflow: hidden;
+    margin-top: 5%;
+    justify-content: center;
+    display: flex;
+    height: 10%;
 }
 #games {
     padding-left: 50px;

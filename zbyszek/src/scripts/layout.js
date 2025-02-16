@@ -45,12 +45,27 @@ document.getElementById("library").onclick = () => {
 document.getElementById("installed").onclick = () => {
     window.location.href = "index.html?action=installed";
 };
-
-async function launch(platform, app){
+//TODO: add support for ea
+async function launch(platform, app, accountid){
           try {
-            await ipcRenderer.invoke('launch', platform, app);
+            console.log(platform, app, accountid);
+            if (platform == "Steam") {
+                const response = await fetch(`http://localhost:8090/api/run/steam/?steamid=${accountid}&appid=${app}`)
+            }
+            if (platform == "EPIC"){
+                window.location.href = `com.epicgames.launcher://apps/${app}?action=launch&silent=true`;
+            }
+            container.style.display = 'none';
             console.log("JESTEM")
           } catch (error) {
             console.error('Błąd podczas logowania przez Steam:', error);
           }
+}
+async function addpath(){
+    try {
+        await ipcRenderer.invoke('addsteampath',);
+        console.log("ELOBENCNOWASCIEZKA")
+    } catch (error) {
+        console.error('Błąd podczas logowania przez Steam:', error);
+    }
 }

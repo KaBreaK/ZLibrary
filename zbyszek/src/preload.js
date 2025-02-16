@@ -17,6 +17,6 @@ contextBridge.exposeInMainWorld('electron', {
 contextBridge.exposeInMainWorld('electron', {
   minimize: () => ipcRenderer.invoke('minimize')
 });
-contextBridge.exposeInMainWorld('launch', {
-  launch: (platform, appid) => ipcRenderer.invoke('launch', platform, appid)
+contextBridge.exposeInMainWorld('electron', {
+  addsteampath: () => ipcRenderer.invoke('addsteampath')
 });

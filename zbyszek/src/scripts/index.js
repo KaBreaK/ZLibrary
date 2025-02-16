@@ -2,8 +2,8 @@
 const searchInput = document.getElementById('search-input');
 const searchIcon = document.getElementById('search-icon');
 const clearIcon = document.getElementById('clear-icon');
-const searchIconImg = document.getElementById('search-icon-img');
-const clearIconImg = document.getElementById('clear-icon-img');
+const gameCount = document.getElementById('game-count');
+const container = document.getElementById('accountchooser');
 let gamesData
 clearIcon.addEventListener('click', () => {
     searchInput.value = '';
@@ -12,8 +12,10 @@ clearIcon.addEventListener('click', () => {
 });
 searchInput.addEventListener('input', () => {
     if (searchInput.value) {
+        gameCount.style.display = 'none';
         clearIcon.style.display = 'inline-block';
     } else {
+        gameCount.style.display = 'block';
         clearIcon.style.display = 'none';
     }
 });
@@ -169,21 +171,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (action === "library") {
         gamesData = await fetchGames();
+        gameCount.textContent = `${gamesData.games.length}`;
         displayGames(sortGames(gamesData.games, 7));
     } else if (action === "installed") {
         gamesData = await fetchInstalledGames();
+        gameCount.textContent = `${gamesData.games.length}`;
         displayGames(sortGames(gamesData.games, 7));
     }else{
         gamesData = await fetchGames();
+        gameCount.textContent = `Games: ${gamesData.games.length}`;
         displayGames(sortGames(gamesData.games, 7));
     }
 });
 async function choose(game) {
-    const container = document.getElementById('accountchooser');
+
 
     if (game.playTimePerAccount.length === 1) {
         const account = game.playTimePerAccount[0];
-        launch(account.platform, game.steamid)
+        if (account.platform == "Steam") {
+            launch(account.platform, game.steamid, account.accountId)
+        }else if (account.platform == "EPIC"){
+            launch(account.platform, game.epicRunUrl, account.accountId)
+        }
         return;
     }
 
@@ -202,7 +211,7 @@ async function choose(game) {
             <h4>${account.accountName}</h4>
         `;
         accountDiv.addEventListener('click', (event) => {
-            launch(account.platform, game.steamid)
+            launch(account.platform, game.steamid, account.accountId)
             event.stopPropagation();
         });
         container.appendChild(accountDiv);
