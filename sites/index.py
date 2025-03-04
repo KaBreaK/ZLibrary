@@ -1,182 +1,162 @@
 from fastapi import APIRouter, HTTPException, Request
 import sqlite3
+from collections import defaultdict
 from static.utils.update_games import update_games
 from static.utils.start_game import SteamRun
 import json
+
 index_router = APIRouter()
 
-def get_accounts():
+def get_db_connection():
+    print("Opening database connection")
     db = sqlite3.connect("static/glibrary.db")
     db.row_factory = sqlite3.Row
-    cursor = db.cursor()
+    return db
 
-    cursor.execute("SELECT * FROM accounts")
-
-    rows = cursor.fetchall()
-
-    accounts = []
-
-    for row in rows:
-        accounts.append({
-            'id': row['id'],
-            'accountName': row['accountName'],
-            'platform': row['platform'],
-            'steamAPI': row['steamAPI'],
-            'accountid': row['accountid']
-        })
-
+def get_accounts():
+    print("Fetching accounts from database")
+    with get_db_connection() as db:
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM accounts")
+        accounts = [dict(row) for row in cursor.fetchall()]
+    print(f"Retrieved {len(accounts)} accounts")
     return accounts
 
-def get_games(b):
-    db = sqlite3.connect("static/glibrary.db")
-    db.row_factory = sqlite3.Row
-    cursor = db.cursor()
-    cursor.execute(f"""
+def get_games(only_installed):
+    print(f"Fetching games with only_installed={only_installed}")
+    query = """
         SELECT games.*, accounts.id AS acc_id, accounts.accountName, accounts.platform, accounts.steamAPI, accounts.accountid,
                gamespec.fav, gamespec.completed
         FROM games
         LEFT JOIN accounts ON games.account_id = accounts.id
         LEFT JOIN gamespec ON games.GameName = gamespec.game_name
-        {"WHERE games.installed = 1" if b else ""}
-    """)
+    """
+    params = []
+    if only_installed:
+        query += " WHERE games.installed = ?"
+        params.append(1)
 
-    rows = cursor.fetchall()
+    with get_db_connection() as db:
+        cursor = db.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
 
-    games_dict = {}
-    accounts = []
+    print(f"Retrieved {len(rows)} games from database")
+    games_dict = defaultdict(lambda: {
+        'totalPlayTime': 0,
+        'playTimePerAccount': [],
+        'maxPlayTime': 0
+    })
+    accounts = {}
 
     for row in rows:
         game_name = row['GameName']
+        play_time = row['playTime']
+        account_id = row['acc_id']
 
-        game_data = {
+        games_dict[game_name].update({
+            'name': game_name,
             'epicRunUrl': row['epicRunUrl'],
             'steamid': row['steamid'],
             'gamephoto': row['gamePhoto'],
-            'account_id': row['account_id'],
-            'playTime': row['playTime'],
             'lastPlayed': row['lastPlayed'],
-            'installed': row['installed'] if row['installed'] is not None else 0,
-            'fav': row['fav'] if row['fav'] is not None else 0,
-            'completed': row['completed'] if row['completed'] is not None else 0,
+            'installed': row['installed'] or 0,
+            'fav': row['fav'] or 0,
+            'completed': row['completed'] or 0,
+        })
+
+        games_dict[game_name]['totalPlayTime'] += play_time
+        games_dict[game_name]['playTimePerAccount'].append({
             'accountName': row['accountName'],
             'platform': row['platform'],
-            'accountid': row['accountid']
-        }
+            'playTime': play_time,
+            'accountId': row['accountid']
+        })
 
-        if game_name in games_dict:
-            games_dict[game_name]['totalPlayTime'] += game_data['playTime']
-            games_dict[game_name]['playTimePerAccount'].append({
-                'accountName': game_data['accountName'],
-                'platform': game_data['platform'],
-                'playTime': game_data['playTime'],
-                'accountId': game_data['accountid']
-            })
-            if game_data['playTime'] > games_dict[game_name]['maxPlayTime']:
-                games_dict[game_name]['maxPlayTime'] = game_data['playTime']
-                games_dict[game_name]['lastPlayed'] = game_data['lastPlayed']
-        else:
-            games_dict[game_name] = {
-                'name': game_name,
-                'epicRunUrl': game_data['epicRunUrl'],
-                'steamid': game_data['steamid'],
-                'gamephoto': game_data['gamephoto'],
-                'totalPlayTime': game_data['playTime'],
-                'lastPlayed': game_data['lastPlayed'],
-                'installed': row['installed'] if row['installed'] is not None else 0,
-                'fav': game_data['fav'],
-                'completed': game_data['completed'],
-                'playTimePerAccount': [{
-                    'accountName': game_data['accountName'],
-                    'platform': game_data['platform'],
-                    'playTime': game_data['playTime'],
-                    'accountId': game_data['accountid']
-                }],
-                'maxPlayTime': game_data['playTime']
-            }
+        if play_time > games_dict[game_name]['maxPlayTime']:
+            games_dict[game_name]['maxPlayTime'] = play_time
+            games_dict[game_name]['lastPlayed'] = row['lastPlayed']
 
-        if row['acc_id'] not in [acc['id'] for acc in accounts]:
-            account_data = {
-                'id': row['acc_id'],
+        if account_id not in accounts:
+            accounts[account_id] = {
+                'id': account_id,
                 'accountName': row['accountName'],
                 'platform': row['platform'],
                 'accountid': row['accountid']
             }
 
-            accounts.append(account_data)
-
-    db.commit()
-    db.close()
-
-    games = list(games_dict.values())
-
-    return games, accounts
+    print("Games and accounts processing complete")
+    return list(games_dict.values()), list(accounts.values())
 
 @index_router.get("/api/accounts")
 async def accounts():
-    accounts = get_accounts()
-    return {"accounts": accounts}
+    return {"accounts": get_accounts()}
 
 @index_router.get("/api/games")
 async def index():
     games, accounts = get_games(False)
     return {"games": games, "accounts": accounts}
+
 @index_router.get("/api/installed")
 async def installed():
     games, accounts = get_games(True)
     return {"games": games, "accounts": accounts}
+
 @index_router.get('/api/status')
 def api_test():
-    return {
-        "status": "running",
-        "message": "Server is operational"
-    }
+    print("Status check requested")
+    return {"status": "running", "message": "Server is operational"}
 
 @index_router.get('/api/sync')
 async def sync_games():
+    print("Syncing games")
     update_games()
     return {"message": "Games synced"}
+
 @index_router.get('/api/path')
 async def steampath():
+    print("Fetching Steam path")
     with open("static/locations.json", 'r') as f:
-        config = json.load(f)
-    return config
+        return json.load(f)
 
 @index_router.post("/api/path/update")
 async def update_steampath(request: Request):
-    # try:
+    try:
         data = await request.json()
-        with open("static/locations.json", 'r') as f:
-            config = json.load(f)
         new_path = data.get('new_path')
-        config["steampath"] = new_path
+        print(f"Updating Steam path to {new_path}")
 
-        with open("static/locations.json", 'w') as f:
+        with open("static/locations.json", 'r+') as f:
+            config = json.load(f)
+            config["steampath"] = new_path
+            f.seek(0)
             json.dump(config, f, indent=4)
+            f.truncate()
 
         return {"message": "Steam path updated successfully", "new_path": new_path}
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        print(f"Error updating Steam path: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @index_router.post('/api/fav')
 async def updategamespec(request: Request):
-    db = sqlite3.connect("static/glibrary.db")
-    cursor = db.cursor()
     data = await request.json()
     game_name = data.get('game_name')
-    cursor.execute("SELECT fav FROM gamespec WHERE game_name = ?", (game_name,))
-    result = cursor.fetchone()
+    print(f"Updating favorite status for game: {game_name}")
 
-    if result is None:
-        cursor.execute("INSERT INTO gamespec (game_name, fav) VALUES (?, ?)", (game_name, True))
-    else:
-        current_fav = result[0]
-        new_fav = not current_fav
-        cursor.execute("UPDATE gamespec SET fav = ? WHERE game_name = ?", (new_fav, game_name))
-    db.commit()
-    db.close()
+    with get_db_connection() as db:
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO gamespec (game_name, fav)
+            VALUES (?, ?) ON CONFLICT(game_name) DO UPDATE SET fav = NOT fav
+        """, (game_name, True))
+        db.commit()
+
     return {"message": "Database updated successfully"}
 
 @index_router.get('/api/run/steam')
-async def runsteam(steamid: str, appid: str | None=None):
+async def runsteam(steamid: str, appid: str | None = None):
+    print(f"Starting Steam game with steamid={steamid}, appid={appid}")
     manager = SteamRun()
     manager.run(steamid=steamid, appid=appid)
     return {"message": "Game started"}
