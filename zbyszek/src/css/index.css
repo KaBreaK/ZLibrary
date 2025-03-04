@@ -107,9 +107,13 @@ header{
     transform: translateY(0);
 }
 
-.game-item:hover {
+.game-item:hover{
+    opacity: 1;
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+.game-item.visible.not-installed:hover{
+    opacity: 1;
 }
 
 .game-item img {

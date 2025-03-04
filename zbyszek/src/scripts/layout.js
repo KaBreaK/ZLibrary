@@ -30,13 +30,15 @@ async function sync() {
     }
 
     lastSyncTime = now;
-
+    showLoader()
     await fetch('http://localhost:8090/api/sync', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
         }
     })
+    hideLoader()
+    window.location.href = "index.html?action=library";
 }
 document.getElementById("library").onclick = () => {
     window.location.href = "index.html?action=library";
@@ -68,4 +70,21 @@ async function addpath(){
     } catch (error) {
         console.error('Błąd podczas logowania przez Steam:', error);
     }
+}
+
+
+
+
+
+function showLoader() {
+    const loader = document.querySelector('.loader');
+    const body = document.body;
+    loader.style.display = 'grid';
+    body.classList.add('loading');
+}
+function hideLoader() {
+    const loader = document.querySelector('.loader');
+    const body = document.body;
+    loader.style.display = 'none';
+    body.classList.remove('loading');
 }

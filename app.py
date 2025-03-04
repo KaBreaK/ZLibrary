@@ -59,18 +59,13 @@ def init_db():
     db.commit()
     db.close()
 def init_json():
-    # Sprawdź, czy plik już istnieje
     if os.path.exists("static/locations.json"):
         return
-
-    # Definiowanie ścieżek do bibliotek
     library_paths = {
         "steampath": "C:/Program Files (x86)/Steam",
         "epicpath": "C:/ProgramData/Epic/EpicGamesLauncher",
         "eapath": "C:/Program Files (x86)/Origin Games"
     }
-
-    # Zapisanie do pliku JSON
     with open("static/locations.json", 'w') as f:
         json.dump(library_paths, f, indent=4)
 init_db()
@@ -82,4 +77,4 @@ async def shutdown(background_tasks: BackgroundTasks):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8090)
+    uvicorn.run(app, host="0.0.0.0", port=8090, workers=1)

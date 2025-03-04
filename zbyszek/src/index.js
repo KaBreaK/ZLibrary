@@ -8,16 +8,24 @@ const {
   ipcMain,
   dialog,
 } = require("electron");
+const gotTheLock = app.requestSingleInstanceLock();
 const { exec, spawn } = require("child_process");
 const axios = require("axios");
 const path = require("node:path");
 const http = require("http");
-
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+//TODO: aplikacja sie wlacza po wywolaniu
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
-let flaskProcess;
+const exePath = path.join(__dirname, 'back.exe');
+const childProcess = spawn(exePath);
+childProcess.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+    });
+childProcess.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+    });
+let backproces;
 let mainWindow;
 let tray;
 let isQuitting = false;
@@ -30,13 +38,14 @@ const createWindow = () => {
     resizable: false,
     transparent: true,
     frame: false,
-    icon: path.join(__dirname, 'icon.png'),
+    icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       preload: path.join(__dirname, "preload.js"),
     },
   });
+  // mainWindow.webContents.openDevTools()
   ipcMain.handle("addpath", async () => {
     createLoginWindow("addpath");
   });
@@ -78,15 +87,25 @@ const createWindow = () => {
         return { error: error.message };
     }
 });
-
+if (!gotTheLock) {
+  console.log("Another instance is already running. Exiting...");
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "sites/index.html"));
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 function createTrayIcon() {
-  tray = new Tray("src/icon.png");
+  tray = new Tray("icon.ico");
   const contextMenu = Menu.buildFromTemplate([
     { label: "Show", click: () => mainWindow.show() },
     {
@@ -132,6 +151,12 @@ app.on("ready", async () => {
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+app.on("second-instance", () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
   }
 });
 async function createLoginWindow(platform) {

@@ -1,8 +1,8 @@
 {
-  "name": "majap",
+  "name": "Zlibrary",
   "productName": "majap",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Biblioteka Gier",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -10,6 +10,41 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "icon",
+        "name": "Zlibrary",
+        "executableName": "zlibrary",
+        "appCopyright": "Copyright © 2024 KaBreaX",
+        "win32metadata": {
+          "CompanyName": "KaBreaX",
+          "FileDescription": "Biblioteka dla wszystkich towich gier",
+          "ProductName": "zlibrary",
+          "InternalName": "zlibrary"
+        }
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "iconUrl": "https://github.com/KaBreaK/Zlibrabry/blob/master/zbyszek/src/icon.png?raw=true",
+            "setupIcon": "icon.ico"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "win32"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.5.0",
@@ -24,7 +59,7 @@
     "electron-prebuilt-compile": "^8.2.0"
   },
   "keywords": [],
-  "author": "macie",
+  "author": "KaBreaX",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.7.9",

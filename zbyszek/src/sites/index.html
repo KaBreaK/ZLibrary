@@ -11,8 +11,9 @@
 
 <body>
 <section class="main-app">
+<div id="loader" class="loader"></div>
     <section class="sidebar">
-        <a href="index.html"><img src="../images/logo.png" class="logo"></a>
+        <img src="../images/logo.png" class="logo" id="logos">
         <button id="library"><img src="../images/library.png"></img>Library</button>
         <button id="installed"><img src="../images/download.png">Installed</button>
         <!-- TODO: stworzyc tworzenie kategori -->
@@ -23,7 +24,7 @@
         </div>
     </section>
     <div class="wrapper">
-        <section class="menu">
+        <section class="menu" id="draggable">
             <img id="close" src="../images/close.png" width="2%">
             <img id="minimize" src="../images/minimize.png" width="2%">
         </section>

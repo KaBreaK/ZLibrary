@@ -77,13 +77,13 @@ function GetAccount() {
                 li.className = 'account-item';
                 li.style.display = 'flex';
                 li.style.alignItems = 'center';
-                li.style.gap = '10px';
+                li.style.gap = '5px';
                 li.style.padding = '5px 0';
 
                 const nameSpan = document.createElement('span');
                 nameSpan.textContent = account.accountName;
                 nameSpan.style.width = '150px';
-                li.appendChild(nameSpan);
+
 
                 if (account.platform === 'Steam') {
                     const input = document.createElement('input');
@@ -99,7 +99,6 @@ function GetAccount() {
                     const saveButton = document.createElement('button');
                     saveButton.textContent = 'Save';
                     saveButton.className = 'save-btn';
-                    saveButton.style.marginLeft = '10px';
 
                     saveButton.onclick = () => {
                         fetch(`http://localhost:8090/api/save/${account.id}/${input.value}`)
@@ -109,33 +108,36 @@ function GetAccount() {
                     };
 
                     const logoutButton = document.createElement('button');
-                    logoutButton.textContent = 'Logout';
+                    logoutButton.textContent = 'X';
+                    logoutButton.style.color = 'red';
                     logoutButton.className = 'save-btn';
-                    logoutButton.style.marginLeft = '10px';
 
                     logoutButton.onclick = () => logoutAccount(account.id, li);
                     const LogIn = document.createElement('button');
                     LogIn.textContent = 'Log In';
                     LogIn.className = 'save-btn';
                     LogIn.style.marginLeft = '10px';
-
                     LogIn.onclick = async () =>{
                         console.log(account.accountid)
                         const response = await fetch(`http://localhost:8090/api/run/steam/?steamid=${account.accountid}`)
                     };
-
+                    li.appendChild(logoutButton);
+                    li.appendChild(nameSpan);
                     li.appendChild(input);
                     li.appendChild(saveButton);
-                    li.appendChild(logoutButton);
                     li.appendChild(LogIn);
                 } else {
+
                     const logoutButton = document.createElement('button');
-                    logoutButton.textContent = 'Logout';
+                    logoutButton.textContent = 'X';
+                    logoutButton.style.color = 'red';
                     logoutButton.className = 'save-btn';
                     logoutButton.style.marginLeft = 'auto';
 
+
                     logoutButton.onclick = () => logoutAccount(account.id, li);
                     li.appendChild(logoutButton);
+                    li.appendChild(nameSpan);
                 }
 
                 switch (account.platform) {
@@ -170,7 +172,9 @@ function logoutAccount(accountId, liElement) {
 }
 
 window.onload = GetAccount;
-function findids(){
-    fetch("http://localhost:8090/find")
+async function findids(){
+    showLoader();
+    await fetch("http://localhost:8090/find")
     location.reload();
+    hideLoader()
 }

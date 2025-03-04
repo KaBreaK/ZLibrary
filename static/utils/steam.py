@@ -1,7 +1,5 @@
 import sqlite3
 from sys import exception
-
-from bs4 import BeautifulSoup
 import requests
 import re
 import json
@@ -45,24 +43,31 @@ class SteamLibrary:
         return tab
 #TODO: zajebac bardziej uniwersalny sposob zeby to dzialalo
     def without_api(self, steam_id):
-        try:
-            games = []
-            session = requests.Session()
-            steam_profile_url = f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'
-            cookies = {
-                'steamLoginSecure': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwRF8yNUQ2RUQ2NV80QzcwQyIsICJzdWIiOiAiNzY1NjExOTk4MDcwODgyNTYiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3Mzk4MTU1OTEsICJuYmYiOiAxNzMxMDg3OTQ4LCAiaWF0IjogMTczOTcyNzk0OCwgImp0aSI6ICIwMDA0XzI1RDZFRDY1XzU4NkMyIiwgIm9hdCI6IDE3Mzk3Mjc1MzksICJydF9leHAiOiAxNzU3NjQ4NTU5LCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiODMuMzEuMTQuMTExIiwgImlwX2NvbmZpcm1lciI6ICI4My4zMS4xNC4xMTEiIH0.Tjc7Vi6_R_sXWk_IoVYz5g9jFdo1S6JBF2tefzlJ3tPl3b8M6hXsYBEq3lRFeegtF6aMlgxnBP-mqV1UlnizDA"}
-            session.cookies.update(cookies)
-            response = session.get(steam_profile_url)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.text, 'html.parser')
-                data_json = soup.find('template', {'data-profile-gameslist': True})['data-profile-gameslist']
-                data = json.loads(data_json.replace('&quot;', '"'))
-                dupa = data.get('rgGames', [])
-                return dupa
+        response = requests.get(f'https://zlibrary.glitch.me/dane?steamId={steam_id}')
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
             return []
-        except Exception as e:
-            print("chujnia z grzybem")
-            return []
+    # def without_api(self, steam_id):
+    #     try:
+    #         games = []
+    #         session = requests.Session()
+    #         steam_profile_url = f'https://steamcommunity.com/profiles/{steam_id}/games/?tab=all'
+    #         cookies = {
+    #             'steamLoginSecure': "76561199807088256%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwRF8yNUQ2RUQ2NV80QzcwQyIsICJzdWIiOiAiNzY1NjExOTk4MDcwODgyNTYiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3Mzk4MTU1OTEsICJuYmYiOiAxNzMxMDg3OTQ4LCAiaWF0IjogMTczOTcyNzk0OCwgImp0aSI6ICIwMDA0XzI1RDZFRDY1XzU4NkMyIiwgIm9hdCI6IDE3Mzk3Mjc1MzksICJydF9leHAiOiAxNzU3NjQ4NTU5LCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiODMuMzEuMTQuMTExIiwgImlwX2NvbmZpcm1lciI6ICI4My4zMS4xNC4xMTEiIH0.Tjc7Vi6_R_sXWk_IoVYz5g9jFdo1S6JBF2tefzlJ3tPl3b8M6hXsYBEq3lRFeegtF6aMlgxnBP-mqV1UlnizDA"}
+    #         session.cookies.update(cookies)
+    #         response = session.get(steam_profile_url)
+    #         if response.status_code == 200:
+    #             soup = BeautifulSoup(response.text, 'html.parser')
+    #             data_json = soup.find('template', {'data-profile-gameslist': True})['data-profile-gameslist']
+    #             data = json.loads(data_json.replace('&quot;', '"'))
+    #             dupa = data.get('rgGames', [])
+    #             return dupa
+    #         return []
+    #     except Exception as e:
+    #         print("chujnia z grzybem")
+    #         return []
 
     def get_steam_games(self, steam_id, steam_api):
         api = self.load_steam_api(steam_id)
@@ -85,7 +90,7 @@ class SteamLibrary:
                 games = []
             return games
         else:
-            return []
+            return self.without_api(steam_id)
 
     def get_steam_name(self, steam_id):
         try:
