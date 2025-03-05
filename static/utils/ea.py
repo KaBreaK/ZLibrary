@@ -179,8 +179,6 @@ class EAAuthenticator:
             games.append(elobenc_dict)
         return games
 if __name__ == "__main__":
-    login = "makasko24@gmail.com"
-    password = "Kalosze09"
     authenticator = EAAuthenticator(login, password)
     token = authenticator.get_games()
     for game in token:
