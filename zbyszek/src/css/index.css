@@ -96,7 +96,7 @@ header{
     flex-direction: column;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 2px solid #444;
-    height: 450px;
+    height: 68%;
     opacity: 0;
     transform: translateY(50px);
     transition: opacity 1s ease, transform 1s ease;
