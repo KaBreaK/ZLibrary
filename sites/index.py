@@ -119,7 +119,7 @@ async def steampath():
     with open("static/locations.json", 'r') as f:
         return json.load(f)
 
-@index_router.post("/api/path/update")
+@index_router.post("/api/steampath/update")
 async def update_steampath(request: Request):
     try:
         data = await request.json()
@@ -129,6 +129,25 @@ async def update_steampath(request: Request):
         with open("static/locations.json", 'r+') as f:
             config = json.load(f)
             config["steampath"] = new_path
+            f.seek(0)
+            json.dump(config, f, indent=4)
+            f.truncate()
+
+        return {"message": "Steam path updated successfully", "new_path": new_path}
+    except Exception as e:
+        print(f"Error updating Steam path: {e}")
+        raise (HTTPException(status_code=500, detail=str(e)))
+
+@index_router.post("/api/epicpath/update")
+async def update_epicpath(request: Request):
+    try:
+        data = await request.json()
+        new_path = data.get('new_path')
+        print(f"Updating EPIC path to {new_path}")
+
+        with open("static/locations.json", 'r+') as f:
+            config = json.load(f)
+            config["epicpath"] = new_path
             f.seek(0)
             json.dump(config, f, indent=4)
             f.truncate()

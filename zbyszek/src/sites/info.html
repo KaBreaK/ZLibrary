@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Guide</title>
+  <style>
+      body{
+          background: white;
+      }
+      img{
+        width: 80vw;
+        height: auto;
+        object-fit: cover;
+      }
+    #container {
+      width: 800px;
+      border: 1px solid #333;
+      margin: 20px auto;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+    }
+    #toc {
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+    }
+    #toc ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    #toc li {
+      margin-bottom: 5px;
+    }
+    #toc a {
+      text-decoration: none;
+      color: #007BFF;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section h2, .section h3 {
+      margin-bottom: 10px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .step:nth-child(even) {
+      flex-direction: row-reverse;
+    }
+    .step p {
+      margin: 0;
+      flex: 1;
+    }
+    .step img {
+      width: 70%;
+      height: auto;
+      object-fit: cover;
+      margin: 0 10px;
+    }
+    /* Fetch button at the top-right of container */
+    #fetchButton {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    /* Fetch result area at the bottom */
+    #fetchResult {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+      min-height: 30px;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <button id="fetchButton">CHECK API STATUS</button>
+      <div id="fetchResult"></div>
+      <div><p>If the API is not running, you can shut down the app and RUN AS ADMINISTRATOR.</p></div>
+      <div><p>If the API is running and you still have an issue, please contact me or report the issue on GitHub.</p></div>
+    <h1>Visual Guide</h1>
+    <div id="toc">
+      <h2>Table of Contents</h2>
+      <ul>
+        <li><a href="#launch-game">Launch Game (3 steps)</a></li>
+        <li><a href="#refresh-games">Refresh Games (1 step)</a></li>
+        <li>
+          <a href="#add-accounts">Add Accounts</a>
+          <ul>
+            <li><a href="#autosteam">Auto Steam (2 steps)</a></li>
+            <li><a href="#steam">Steam (4 steps)</a></li>
+            <li><a href="#epic-games">Epic Games (4 steps)</a></li>
+          </ul>
+        </li>
+        <li><a href="#change-paths-steam">Change Paths to Steam (2 steps)</a></li>
+        <li><a href="#STEAMAPI">No games for some Steam accounts? Why you need the Steam API (2 steps)</a></li>
+      </ul>
+    </div>
+
+    <!-- Section 1: Launch Game -->
+    <div class="section" id="launch-game">
+      <h2>Launch Game (3 steps)</h2>
+      <div class="step">
+        <p>Step 1: Select a game</p>
+        <img src="screenshoots/launch1.png" alt="Initialize game engine">
+      </div>
+      <div class="step">
+        <p>Step 2: Click play (If there is only one account, the game will start with the correct account automatically)</p>
+        <img src="screenshoots/launch2.png" alt="Load game assets">
+      </div>
+      <div class="step">
+        <p>Step 3: Select an account, and the game will start on the selected account</p>
+        <img src="screenshoots/launch3.png" alt="Start the game with the correct account">
+      </div>
+    </div>
+
+    <!-- Section 2: Refresh Games -->
+    <div class="section" id="refresh-games">
+      <h2>Refresh Games (1 step)</h2>
+      <div class="step">
+        <p>Step 1: Click the refresh icon and wait</p>
+        <img src="screenshoots/restart.png" alt="Refresh game list">
+      </div>
+    </div>
+
+    <!-- Section 3: Add Accounts -->
+    <div class="section" id="add-accounts">
+      <div class="section" id="autosteam">
+        <h3>Auto Steam (2 steps)</h3>
+        <div class="step">
+          <p>Step 1: Open settings</p>
+          <img src="screenshoots/settings.png" alt="Steam settings">
+        </div>
+        <div class="step">
+          <p>Step 2: Click "Find Steam accounts" and wait</p>
+          <img src="screenshoots/Finsteam.png" alt="Verify Steam information">
+        </div>
+      </div>
+      <!-- Subcategory: Steam -->
+      <div class="section" id="steam">
+        <h3>Steam (4 steps)</h3>
+        <div class="step">
+          <p>Step 1: Open settings</p>
+          <img src="screenshoots/settings.png" alt="Steam settings">
+        </div>
+        <div class="step">
+          <p>Step 2: Click "Sign in through STEAM"</p>
+          <img src="screenshoots/loginviasteam.png" alt="Verify Steam information">
+        </div>
+        <div class="step">
+          <p>Step 3: Log in (You can use the Developer Tools to check, it's the normal Steam login page)</p>
+          <img src="screenshoots/steamlogin.png" alt="Configure Steam security">
+        </div>
+        <div class="step">
+          <p>Step 4: Go to the main page and refresh the game list</p>
+          <img src="screenshoots/restart.png" alt="Save Steam settings">
+        </div>
+      </div>
+
+      <!-- Subcategory: Epic Games -->
+      <div class="section" id="epic-games">
+        <h3>Epic Games (4 steps)</h3>
+        <div class="step">
+          <p>Step 1: Open settings</p>
+          <img src="screenshoots/settings.png" alt="Epic Games settings">
+        </div>
+        <div class="step">
+          <p>Step 2: Click "Add account" under EPIC GAMES</p>
+          <img src="screenshoots/epicbutton.png" alt="Add Epic Games account">
+        </div>
+        <div class="step">
+          <p>Step 3: Log in (You can use the Developer Tools to check, it's the normal Epic Games login page)</p>
+          <img src="screenshoots/loginvaiepic.png" alt="Configure Epic Games security">
+        </div>
+        <div class="step">
+          <p>Step 4: Go to the main page and refresh the game list</p>
+          <img src="screenshoots/restart.png" alt="Save Epic Games settings">
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Change Paths to Steam -->
+    <div class="section" id="change-paths-steam">
+      <h2>Change Paths to Steam/Epic (2 steps)</h2>
+      <h3>You need this for the app to work properly</h3>
+      <div class="step">
+        <p>Step 1: Go to settings</p>
+        <img src="screenshoots/settings.png" alt="Locate Steam path">
+      </div>
+      <div class="step">
+        <p>Step 2: Select your Steam folder</p>
+        <img src="screenshoots/steampath.png" alt="Enter new Steam path">
+      </div>
+    </div>
+
+    <!-- Section 5: Adding Steam API -->
+    <div class="section" id="STEAMAPI">
+      <h2>Adding API KEY (3 steps)</h2>
+      <h3>Why do you need a STEAM API KEY?</h3>
+      <h4>The app can't read your Steam games if your account is private, but the account's API key can. Additionally, the Steam API KEY makes refreshing games faster.</h4>
+      <div class="step">
+        <p>Step 1: Go to settings</p>
+        <img src="screenshoots/settings.png" alt="Locate Steam API settings">
+      </div>
+      <div class="step">
+        <p>Step 2: Enter the API KEY <strong>IMPORTANT!!!</strong> Make sure to match the STEAM API KEY with the appropriate account</p>
+        <img src="screenshoots/APIkey.png" alt="Enter the Steam API key">
+      </div>
+      <div class="step">
+        <p>Step 3: Save your settings</p>
+        <img src="screenshoots/save.png" alt="Save Steam API key">
+      </div>
+    </div>
+
+    <!-- Fetch Result Display -->
+
+  </div>
+
+  <script>
+    document.getElementById('fetchButton').addEventListener('click', function() {
+      fetch('http://localhost:8090/api/status')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then(data => {
+          document.getElementById('fetchResult').textContent = data;
+        })
+        .catch(error => {
+          document.getElementById('fetchResult').textContent = 'Error: ' + error.message;
+        });
+    });
+  </script>
+</body>
+</html>

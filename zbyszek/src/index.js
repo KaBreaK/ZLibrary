@@ -25,6 +25,9 @@ childProcess.stdout.on('data', (data) => {
 childProcess.stderr.on('data', (data) => {
         console.error(`stderr: ${data}`);
     });
+childProcess.stdout.on('data', (data) => {
+  console.log(`stdout: ${data}`);
+});
 let backproces;
 let mainWindow;
 let tray;
@@ -44,6 +47,13 @@ const createWindow = () => {
       contextIsolation: false,
       preload: path.join(__dirname, "preload.js"),
     },
+  });
+  mainWindow.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+    return false;
   });
   //mainWindow.webContents.openDevTools()
   ipcMain.handle("addpath", async () => {
@@ -77,7 +87,30 @@ const createWindow = () => {
     const newPath = result.filePaths[0];
     console.log("Selected path:", newPath);
     try {
-        const response = await fetch("http://localhost:8090/api/path/update", {
+        const response = await fetch("http://localhost:8090/api/steampath/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ new_path: newPath })
+        });
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+        return { error: error.message };
+    }
+});
+  ipcMain.handle('addepicpath', async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory']
+    });
+    if (result.canceled) {
+        return { message: "Operation cancelled" };
+    }
+    const newPath = result.filePaths[0];
+    console.log("Selected path:", newPath);
+    try {
+        const response = await fetch("http://localhost:8090/api/epicpath/update", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ new_path: newPath })
@@ -93,13 +126,6 @@ const createWindow = () => {
 if (!gotTheLock) {
   console.log("Another instance is already running. Exiting...");
   app.quit();
-} else {
-  app.on("second-instance", () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
-  });
 }
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "sites/index.html"));
@@ -159,7 +185,9 @@ app.on("activate", () => {
 app.on("second-instance", () => {
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore();
+    if (!mainWindow.isVisible()) mainWindow.show();
     mainWindow.focus();
+
   }
 });
 async function createLoginWindow(platform) {
@@ -170,7 +198,6 @@ async function createLoginWindow(platform) {
     height: Math.floor(height * 0.5),
     x: Math.floor((width - width * 0.4) / 2),
     y: Math.floor((height - height * 0.5) / 2),
-    transparent: true,
     frame: true,
     resizable: true,
     webPreferences: {
@@ -200,7 +227,7 @@ async function createLoginWindow(platform) {
       });
   }
   if (platform === "question") {
-    loginWindow.loadURL("README.md");
+    loginWindow.loadFile(path.join(__dirname, "sites/info.html"));
   }
   if (platform === "steam") {
     loginWindow.loadURL("http://localhost:8090/auth/steam");

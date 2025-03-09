@@ -9,6 +9,8 @@
 
 Additionally, games are launched immediately on the appropriate account—eliminating the need to log out and log back in. Users can also check the time they’ve spent on each game across all their accounts and effortlessly browse games without having to switch between platforms.
 
+The application also allows users to quickly switch between accounts with a single button press, making it even more convenient.
+
 In the future, the application plans to implement automatic retrieval of free games from Epic and extend support to additional platforms.
 
 ---
@@ -19,6 +21,7 @@ In the future, the application plans to implement automatic retrieval of free ga
 - **Secure Data Handling:** No sensitive information (like login or password data) is stored.
 - **Local Storage:** Authorization codes are securely stored on your device.
 - **Multi-Platform Support:** Launch games from various platforms/accounts effortlessly.
+- **Quick Account Switching:** Change accounts instantly with a single button press.
 
 ---
 

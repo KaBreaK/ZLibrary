@@ -209,9 +209,41 @@ header{
 .accounts-time {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
     font-size: 14px;
+    position: relative;
+    width: max-content;
+    overflow: hidden;
 }
+
+.account-items {
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.partially-hidden {
+    opacity: 0.5;
+    max-height: 10px;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.hidden {
+    opacity: 0;
+    transform: translateY(-5px);
+    pointer-events: none;
+    position: absolute;
+}
+
+.accounts-time:hover .partially-hidden,
+.accounts-time:hover .hidden {
+    opacity: 1;
+    max-height: unset;
+    transform: translateY(0);
+    pointer-events: auto;
+    position: static;
+}
+
+
 
 
 #sortModal {

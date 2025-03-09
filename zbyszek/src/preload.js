@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electron', {
   close: () => ipcRenderer.invoke('close'),
   minimize: () => ipcRenderer.invoke('minimize'),
   addsteampath: () => ipcRenderer.invoke('addsteampath'),
+  addepicpath: () => ipcRenderer.invoke('addepicpath'),
   questionpage: () => ipcRenderer.invoke('questionpage')
 });

@@ -45,8 +45,8 @@ function displayGames(games) {
 
     const observerOptions = {
         root: null,
-        rootMargin: '0px',
-        threshold: 0.1
+        rootMargin: '-10px',
+        threshold: 0.001
     };
 
     const observer = new IntersectionObserver((entries, observer) => {
@@ -92,9 +92,18 @@ function displayGames(games) {
 
         const accountsTime = document.createElement('div');
         accountsTime.classList.add('accounts-time');
-        accountsTime.innerHTML = game.playTimePerAccount.map(account =>
-            `<div>${account.accountName}: ${Math.floor(account.playTime / 60)}h</div>`
-        ).join('');
+
+        const accounts = game.playTimePerAccount
+    .sort((a, b) => b.playTime - a.playTime)
+    .map((account, index) =>
+        `<div class="account-items ${index === 2 ? 'partially-hidden' : ''} ${index > 2 ? 'hidden' : ''}">
+            ${account.accountName}: ${Math.floor(account.playTime / 60)}h
+        </div>`
+    );
+
+        accountsTime.innerHTML = accounts.join('');
+
+
 
         overlay.appendChild(gameName);
         overlay.appendChild(playButton);

@@ -64,12 +64,20 @@ async function launch(platform, app, accountid){
             console.error('Błąd podczas logowania przez Steam:', error);
           }
 }
-async function addpath(){
+async function addpathsteam(){
     try {
         await ipcRenderer.invoke('addsteampath',);
         console.log("ELOBENCNOWASCIEZKA")
     } catch (error) {
         console.error('Błąd podczas logowania przez Steam:', error);
+    }
+}
+async function addpathepic(){
+    try {
+        await ipcRenderer.invoke('addepicpath',);
+        console.log("ELOBENCNOWASCIEZKA")
+    } catch (error) {
+        console.error('Błąd podczas logowania przez epic:', error);
     }
 }
 
