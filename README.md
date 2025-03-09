@@ -29,8 +29,9 @@ In the future, the application plans to implement automatic retrieval of free ga
 
 Here's a preview of what the application looks like:
 
-![Application Screenshot]()
-![Application Screenshot]()
+![Application Screenshot](https://github.com/KaBreaK/ZLibrary/blob/master/zbyszek/src/sites/screenshoots/acc.png?raw=true)
+![Application Screenshot](https://github.com/KaBreaK/ZLibrary/blob/master/zbyszek/src/sites/screenshoots/overall.png?raw=true)
+![Application Screenshot](https://github.com/KaBreaK/ZLibrary/blob/master/zbyszek/src/sites/screenshoots/login.png?raw=true)
 
 ---
 
