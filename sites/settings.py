@@ -69,6 +69,7 @@ async def authorize_steam(request: Request):
         """, media_type="text/html")
 
     db.close()
+    update_games()
     return Response(content=f"""
                 <script>
                     const {{ ipcRenderer }} = require('electron');

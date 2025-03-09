@@ -17,7 +17,7 @@ const http = require("http");
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
-const exePath = path.join(__dirname, 'back.exe');
+const exePath = 'back.exe'
 const childProcess = spawn(exePath);
 childProcess.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
@@ -45,7 +45,7 @@ const createWindow = () => {
       preload: path.join(__dirname, "preload.js"),
     },
   });
-  // mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
   ipcMain.handle("addpath", async () => {
     createLoginWindow("addpath");
   });
@@ -57,6 +57,9 @@ const createWindow = () => {
   });
   ipcMain.handle("LoginViaEA", async () => {
     createLoginWindow("EA");
+  });
+  ipcMain.handle("questionpage", async () => {
+    createLoginWindow("question");
   });
   ipcMain.handle("close", async () => {
     mainWindow.hide();
@@ -195,6 +198,9 @@ async function createLoginWindow(platform) {
         });
         loginWindow.close();
       });
+  }
+  if (platform === "question") {
+    loginWindow.loadURL("README.md");
   }
   if (platform === "steam") {
     loginWindow.loadURL("http://localhost:8090/auth/steam");

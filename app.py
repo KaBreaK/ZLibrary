@@ -1,9 +1,14 @@
+# Copyright (c) 2025 KaBreaK
+# Licensed under the MIT License. See LICENSE file for details.
+
+
+
 from fastapi import FastAPI, BackgroundTasks
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sites.index import index_router
 from sites.settings import settings_router
 import sqlite3
+import signal
 import os
 import json
 
@@ -70,9 +75,13 @@ def init_json():
         json.dump(library_paths, f, indent=4)
 init_db()
 init_json()
+def shutdown_process():
+    pid = os.getpid()
+    os.kill(pid, signal.SIGINT)
+
 @app.post("/shutdown")
-async def shutdown(background_tasks: BackgroundTasks):
-    background_tasks.add_task(os._exit, 0)
+async def shutdown_server(background_tasks: BackgroundTasks):
+    background_tasks.add_task(shutdown_process)
     return {"message": "Server shutting down..."}
 
 if __name__ == '__main__':

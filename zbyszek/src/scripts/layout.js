@@ -3,7 +3,8 @@ document.getElementById('settings').onclick = function() {
     window.location.href='settings.html';
 }
 document.getElementById('info').onclick = function() {
-    console.log("bekaw chuj")
+    ipcRenderer.invoke('questionpage',);
+    console.log("WYSLANE")
 }
 document.getElementById('close').onclick = async function close(){
     try {

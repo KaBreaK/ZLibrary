@@ -2,7 +2,7 @@
   "name": "Zlibrary",
   "productName": "majap",
   "version": "1.0.0",
-  "description": "Biblioteka Gier",
+  "description": "Game Library",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -20,7 +20,7 @@
         "appCopyright": "Copyright © 2024 KaBreaX",
         "win32metadata": {
           "CompanyName": "KaBreaX",
-          "FileDescription": "Biblioteka dla wszystkich towich gier",
+          "FileDescription": "ZLibrary",
           "ProductName": "zlibrary",
           "InternalName": "zlibrary"
         }
